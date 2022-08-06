@@ -4,8 +4,33 @@
 #define bp_white(b) (*b==255 && *(b+1)==255 && *(b+2)==255)
 	HWND DRAW_HWND=NULL;	
 void destroy_drawing();  
+#ifndef VRGB 
+	#define VRGB COLORREF
+	#define VRGB_BLUE 16711680
+	#define VRGB_RED  255
+	#define VRGB_GREEN 64000
+	#define VRGB_WHITE 16777215
+	#define VRGB_BLACK 0
 
-#define RECT val_rect
+	#define VRGB_PINK 13120200 //200,50,200
+	#define VRGB_PURPLE 16728192//128, 64, 255
+	#define VRGB_CYAN 16776960  //0,255,255
+	#define VRGB_YELLOW 65535  //255,255,0
+	#define VRGB_BROWN 15440  //80,60,0
+	#define VRGB_ORANGE 348341  //181,80,5
+	#define VRGB_GREEN_DARK 146456  //24,60,2
+	#define VRGB_GREEN_LIGHT 7405454  //142,255,112
+	#define VRGB_RED_DARK 2626  //66,10,0
+	#define VRGB_RED_LIGHT 1447616  //192,22,22
+	#define VRGB_BLUE_DARK 4259840  //0,0,65
+	#define VRGB_BLUE_LIGHT 11555116  //44,81,176
+	#define VRGB_GREY_DARK 2105376  //32,32,32
+	#define VRGB_GREY_LIGHT 6316128  //96,96,96
+	#define VRGB_GREY_VLIGHT 8421504 // 128,128,128
+	#define VRGB_GREY_VVLIGHT 12632256 //192...
+	#define VRGB_GREY 4210752  //64,64,64
+	#define RECT val_rect
+#endif 
 struct val_rect{
     int X; 
     int Y;
@@ -527,7 +552,8 @@ void ValScreen::SetRECT(val_rect rect){
 }
 
 void ValScreen::buf_load_file_bmp(string fname){
-	HBITMAP hBMP = (HBITMAP) LoadImage( NULL, (LPCWSTR)fname.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE|LR_CREATEDIBSECTION);
+	//HBITMAP hBMP = (HBITMAP) LoadImage( NULL, (LPCWSTR)fname.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE|LR_CREATEDIBSECTION);
+	HBITMAP hBMP = (HBITMAP)LoadImage(NULL, (LPCWSTR)ctolpwstr(fname), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 	int w, h;
 	get_buffer(hBMP,w,h);    
 	SetWidth(w); 
@@ -538,7 +564,7 @@ void ValScreen::get_buffer(HBITMAP &hbmp, int &w, int &h){
 	BITMAP wrbmp;
 	if (!GetObject(hbmp, sizeof(BITMAP), (LPSTR)&wrbmp)) {
 		//LOG("[ERROR] could not retrieve bitmap info");
-		cout << "getObject failed"<<endl;
+		cout << "getbuffer getObject failed"<<endl;
 		return;
 	}	
 	DeleteDC(hdcg);
@@ -1461,7 +1487,7 @@ HWND ValScreen::find_Window(string title,int &x, int &y, int &w, int &h){
 	    //char* title2 = new char[length+1];
 		LPWSTR title2= new WCHAR[length+1];
 	    GetWindowText(hwnd, title2, length+1);
-		wcout << L"found window title: " << title2<<endl;
+		//wcout << L"found window title: " << title2<<endl;
 	    //if (title2 == title){
 		if(wcscmp(title2,ctolpwstr(title))==0){
     		GetWindowRect(enum_HWND, WindowRect);
@@ -1518,7 +1544,7 @@ HWND ValScreen::create_transparent_window(int xx = 820, int yy = 50, int ww = 80
 	hWnd = CreateWindowEx(
 		WS_EX_TRANSPARENT|WS_EX_LAYERED| WS_EX_TOOLWINDOW , //   |WS_EX_LAYERED
 		windowName,
-		LPCWSTR("drawing also"),
+		TEXT("drawing also"),
 		0,//WS_EX_DLGMODALFRAME |WS_EX_CLIENTEDGE | WS_EX_STATICEDGE | WS_EX_APPWINDOW, //WS_OVERLAPPEDWINDOW,
 		xx,
 		yy,
@@ -1570,7 +1596,7 @@ HWND ValScreen::create_transparent_window2(int xx=820,int yy=50,int ww=800,int h
     hWnd = CreateWindow(
 		//WS_EX_TRANSPARENT,//WS_EX_TRANSPARENT|WS_EX_LAYERED| WS_EX_TOOLWINDOW , //   |WS_EX_LAYERED
         windowName, 
-       L"drawing also",
+       TEXT("drawing also"),
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPCHILDREN,//WS_CAPTION|WS_POPUP,//WS_EX_DLGMODALFRAME |WS_EX_CLIENTEDGE | WS_EX_STATICEDGE | WS_EX_APPWINDOW, //WS_OVERLAPPEDWINDOW,
         xx,
         yy,

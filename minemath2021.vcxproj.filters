@@ -26,7 +26,16 @@
     <ClInclude Include="opus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ValScreenwrapper.h">
+    <ClInclude Include="includes2020\valtextcontrol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Suplimental_Headers\MagnumbFrontier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\valtimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="minemath_emu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

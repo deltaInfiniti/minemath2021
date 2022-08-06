@@ -25,7 +25,7 @@ void MUTATE_fast_array_alter(int * ipt, int xmax, int ymax, int tx, int ty, int 
 			iptf();ipt+=2; 
 			iptf();
 			ipt+=ymax-2;//ipt=&arr[tx+1][ty-1];//right
-			iptf();ipt++;
+			iptf();ipt++; 
 			iptf();ipt++;
 			iptf();
 		break;
