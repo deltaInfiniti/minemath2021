@@ -172,7 +172,7 @@ void gdiSaveHbitmappng(HBITMAP& membit, string fname)
         GetEncoderClsid(L"image/png", &clsid);
 
         bitmap.Save(ctolpwstr(fname), &clsid);
-
+         
     }
 
     GdiplusShutdown(gdiplusToken);
