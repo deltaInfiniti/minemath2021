@@ -19,38 +19,29 @@
 #define iptf() (*ipt)++;
 #include "mutate_fast_array_alter.h"
 
+#define MUTATE_fast_array_alter MME_fast_array_dec
+#define iptf() (*ipt)--;
+#include "mutate_fast_array_alter.h"
 
 int emu_danger_color[10] = { 3,11,9,1,10,6,2,12,4,13 };
-string readstr(string q) {
-	cout << q << "==>";
-	string var;
-	getline(cin, var);
-	return var;
-}
-bool readbool(string q) {
-	string r = "";
-	while (r != "y" && r != "n") {
-		cout << q << "(y/n)==>";
-		getline(cin, r);
-	}
-	return (r == "y");
-}
-int readint(string q) {
-	string s = readstr(q);
-	return ctoint(s);
-}
+string readstr(string q);
+bool readbool(string q);
+int readint(string q);
+
 
 class MineMath_emulator {
 
-	unsigned char activeboard[MM_emu_BAD][MM_emu_BAD];
+public:
 	unsigned char mineboard[MM_emu_BAD][MM_emu_BAD];
 	unsigned int dangerboard[MM_emu_BAD][MM_emu_BAD];
 	unsigned int stats_minetotals[MM_emu_BAD][MM_emu_BAD];
-public:
+	unsigned char activeboard[MM_emu_BAD][MM_emu_BAD];
 	unsigned short width = 0, height = 0;
 	unsigned short total_mines = 0;
 	unsigned int total_lands = 0;
 	unsigned int lands_cleared = 0;
+	int total_validate_changes = 0;
+	int stats_totaldangerundermines = 0;
 
 	MineMath_emulator(short w, short h,short count) {
 		width = w; height = h;
@@ -66,10 +57,12 @@ public:
 			}
 		}
 	}
+
 	char getCellValue(short x, short y) {
 		if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_OPEN) {
 			return dangerboard[x][y];
 		}
+		if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_FLAGGED)return 10;
 		return 9;
 	}
 
@@ -88,74 +81,9 @@ public:
 		lands_cleared = 0;
 	}
 
-	void tofile_mbf(string fname) {
-		ofstream ofile(fname.c_str(), ios::binary);
-		char temp;
-		temp = width;
-		ofile << temp;
-		temp = height;
-		ofile << temp;
-		temp = total_mines / 256;
-		ofile << temp;
-		temp = total_mines % 256;
-		ofile << temp;
-
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				if (mineboard[x][y] == MM_emu_MINEBOARD_VALUE_MINE) {
-					temp = x;
-					ofile << temp;
-					temp = y;
-					ofile << temp;
-				}
-			}
-		}
-		ofile.close();
-
-	}
-
-	void tofile_dotmine(string fname) {
-		ofstream ofile(fname.c_str());
-		ofile << width << "x" << height << "x" << total_mines<<"\n";
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_FLAGGED)ofile << "F";
-				else if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_OPEN) {
-					ofile << dangerboard[x][y];
-				}
-				else ofile << "H";
-			}
-			ofile << "\n";
-		}
-		ofile.close();
-	}
-
-	void output_active() {
-		WORD atrs[8] = { 7,1,10,12,4,5,13,11 };
-		HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-		cout << "    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30  \n";
-		for (int y = 0; y < height; y++) {
-			cout << y + 1 << " ";
-			if (y < 9)cout << " ";
-
-			for (int x = 0; x < width; x++) {
-				if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_OPEN) {
-					if (dangerboard[x][y] > 0) {
-						SetConsoleTextAttribute(hStdout, atrs[dangerboard[x][y]]);
-						cout << " " << dangerboard[x][y] << " ";
-						SetConsoleTextAttribute(hStdout, atrs[0]);
-					}
-					else cout << "   ";
-				}
-				else {
-					cout << " # ";
-				}
-			}
-			cout << "\n\n";
-		}
 
 
-	}
+
 	void play() {
 		int x, y;
 		reset();
@@ -230,24 +158,35 @@ public:
 		
 
 	}
+	bool flagcell(short x, short y) {
+		if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_OPEN)return false;
+		if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_FLAGGED)
+			activeboard[x][y] = MM_emu_ACTIVEBOARD_VALUE_CLOSED;
+		else 	
+			activeboard[x][y] = MM_emu_ACTIVEBOARD_VALUE_FLAGGED;
+		return true;
+	}
 
 	bool doClick(short x, short y,bool flag=false) {
 		if (activeboard[x][y]==MM_emu_ACTIVEBOARD_VALUE_CLOSED ) {//&& 
+			if (flag) return flagcell(x, y);
 			return opencell(x, y);
 		}
 		else if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_FLAGGED) {
-			cout << "can't open a flagged cell \n";
+			if (flag) activeboard[x][y] = MM_emu_ACTIVEBOARD_VALUE_CLOSED;
+			else 
+				cout << "can't open a flagged cell \n";
 			return true;
 		}
 		return true;
 	}
 
-
+	
 
 	
 	bool setMine(short x, short y) {
 	//	cout << "setMine x,y : " << x << ":" << y << "\n";
-		if (mineboard[x][y] != MM_emu_MINEBOARD_VALUE_MINE && x < width && y < height) {
+		if (mineboard[x][y] != MM_emu_MINEBOARD_VALUE_MINE && x < width && y < height && x >= 0 && y >= 0) {
 			//increment dangerboard around here. 
 			MME_fast_array_inc((int*)dangerboard, MM_emu_BAD, MM_emu_BAD, x, y, 1);
 			mineboard[x][y] = MM_emu_MINEBOARD_VALUE_MINE;
@@ -255,6 +194,7 @@ public:
 		}
 		return false;
 	}
+
 	short get_maxd(short x, short y) {
 		if (x == 0) {
 			if (y == 0 || y == height - 1)return 3;
@@ -275,6 +215,7 @@ public:
 			
 		return false;
 	}
+
 	void moveMine(short &x, short &y) {
 		unsigned long long int randval;
 		bool latch = true;
@@ -291,11 +232,12 @@ public:
 			}
 		}
 		mineboard[x][y] = MM_emu_MINEBOARD_VALUE_EMPTY;
+		MME_fast_array_dec((int*)dangerboard, MM_emu_BAD, MM_emu_BAD, x, y, 1);
 		x = tx;
 		y = ty;
 	}
-	int total_validate_changes = 0;
-	bool validate() {
+
+	bool validate2() {
 		short total = 0;
 		for (int i = 0; i < width; i++) {
 			for (int x = 0; x < height; x++) {
@@ -309,7 +251,12 @@ public:
 					}
 				}
 				else {
-					total += (mineboard[i][x] == MM_emu_MINEBOARD_VALUE_MINE ? 1 : 0);
+					if (mineboard[i][x] == MM_emu_MINEBOARD_VALUE_MINE) {
+						total++;
+						stats_totaldangerundermines += dangerboard[i][x];
+					}
+					//total += (mineboard[i][x] == MM_emu_MINEBOARD_VALUE_MINE ? 1 : 0);
+
 					stats_minetotals[i][x] += (mineboard[i][x] == MM_emu_MINEBOARD_VALUE_MINE ? 1 : 0);
 				}
 			}
@@ -317,8 +264,119 @@ public:
 	//	cout << "total mines found : " << total << "\n";
 		return total == total_mines;
 	}
+	bool validate() {
+		short total = 0;
+		for (int i = 0; i < width; i++) {
+			for (int x = 0; x < height; x++) {
 
+				if (mineboard[i][x] == MM_emu_MINEBOARD_VALUE_MINE) {
+					total++;
+					stats_totaldangerundermines += dangerboard[i][x];
+					stats_minetotals[i][x]++;
+					if (isDanger_max(i, x)) {
+						// this is a surrounded mine. some systems move this.
+						//use validate2 to move mines like this
+						total_validate_changes++;
+					}
+				}
+				//total += (mineboard[i][x] == MM_emu_MINEBOARD_VALUE_MINE ? 1 : 0);
+			}
+		}
+		//	cout << "total mines found : " << total << "\n";
+		return total == total_mines;
+	}
+
+
+
+	valVeryRandom VVRand;
 #define absindex_toxy(ind,x,y) x=ind%width; y=ind/width; 
+	void fill_mineboard_seeded(string seed) {
+		VVRand.build(seed);
+	}
+	void fill_mineboard_seeded1() {
+
+		short x = 0, y = 0;
+		unsigned long long int randval;
+		short minesset = 0;
+
+		randval = VVRand.next();
+		x = randval % width;
+		y = (randval >> 4) % height;
+		while (minesset < total_mines) {
+			randval = VVRand.next();
+			for (int n = 0; n < 15 && minesset < total_mines; n++) {
+				x += randval & (0x1111111111111111);
+
+				y += x / width;
+				x = x % width;
+				y = y % height;
+
+				randval = randval >> 3;//16
+				if (setMine(x, y))minesset++;
+			}
+		}
+	}
+	void fill_mineboard_seeded1_2() {
+
+		unsigned short x = 0, y = 0;
+		unsigned long long int randval;
+		short minesset = 0;
+
+		//randval = VVRand.next();
+		//x = randval % width;
+		//y = (randval >> 4) % height;
+		while (minesset < total_mines) {
+			randval = VVRand.next();
+
+			x += randval & (0x1111111111111111);
+
+			y += x / width;
+			x = x % width;
+			y = y % height;
+
+
+			if (setMine(x, y))minesset++;
+
+		}
+	}
+
+	void fill_mineboard_seeded1_1() {
+
+		short x = 0, y = 0;
+		unsigned long long int randval;
+		short minesset = 0;
+		short ind = 0;
+		randval = VVRand.next();
+		x = randval % width;
+		y = (randval >> 4) % height;
+		while (minesset < total_mines) {
+			randval = VVRand.next();
+			for (int n = 0; n < 6 && minesset < total_mines; n++) {
+				ind = randval % total_lands;
+				absindex_toxy(ind, x, y);
+				randval = randval >> 8;//16
+				if (setMine(x, y))minesset++;
+			}
+		}
+	}
+
+	void fill_mineboard_seeded2() {
+
+		short x = 0, y = 0;
+		unsigned long long int randval=0;
+		short minesset = 0;
+		while (minesset < total_mines) {
+			randval = VVRand.next();
+			//x = (randval & (4194304)) % width;
+			x = randval % width;
+			//randval = randval >> 8;
+			//y = (randval & (4194304)) % height;
+			randval = VVRand.next();
+			y = (randval) % height;
+			if (setMine(x, y))minesset++;
+
+		}
+	}
 	void fill_mineboard5() {
 
 		short x = 0, y = 0;
@@ -342,6 +400,311 @@ public:
 			}
 		}
 	}
+	void fill_mineboard8() {
+
+		short x = 0, y = 0;
+		unsigned long long int randval;
+		short minesset = 0;
+
+		randval = G_VS_Rand3(G_VS_randMAX);
+		x = randval % width;
+		y = (randval >> 5) % height;
+		while (minesset < total_mines) {
+			randval = G_VS_Rand3(G_VS_randMAX);
+			for (int n = 0; n < 18 && minesset < total_mines; n++) {
+				x += randval & (0x11111111);
+				if (x >= width) {
+					y += x / width;
+					x = x % width;
+					if (y >= height)y = y % height;
+				}
+				randval = randval >> 3;
+				if (setMine(x, y))minesset++;
+			}
+		}
+	}
+
+	void fill_mineboard_spaced2() {
+		unsigned short spaces[2000];
+		short val = total_lands / total_mines;
+		short mval = (total_lands % total_mines )+val;
+		if (mval < 5) {
+			val--;
+			mval += total_mines;
+		}
+		//val*=7;
+		val += width;
+		unsigned long long int randval;
+		for (int i = 0; i < (total_lands *3); i++) {
+			spaces[i] = val;
+		}
+		short x=0, y=0;
+		short spacex = 0;
+		//mval *= 7;
+		mval = total_lands * 2;
+		while (mval > 0) {
+			randval = G_VS_Rand3(G_VS_randMAX);
+			//spacex = randval % total_mines;
+			for (int n = 0; n < 24 && mval>0; n++) {
+				spacex += randval & 63;
+				if (spacex >= (total_lands * 2))spacex %= total_lands * 2;
+				randval = randval >> 2;
+				spaces[spacex]++;
+				mval--;
+
+			}
+			 
+		}	
+		spacex = spacex >> 1;
+		absindex_toxy(spacex, x, y);
+		short minesset = 0;
+		short i = 0;
+		while(minesset != total_mines && i < total_mines*2){
+			x += spaces[i++];
+			if (x >= width) {
+				y += x / width;
+				x = x % width;
+				if (y >= height)y = y % height;
+			}
+			if (setMine(x, y))minesset++;
+		}
+
+
+	}
+	void fill_mineboard_spaced() {
+		unsigned short spaces[2000];
+		short val = 13;
+		short mval = total_mines*3;
+		unsigned long long int randval;
+		for (int i = 0; i < (total_lands * 2); i++) {
+			spaces[i] = val;
+		}
+
+		short x = 0, y = 0;
+		short spacex = 0;
+		while (mval > 0) {
+			randval = G_VS_Rand3(G_VS_randMAX);
+			//spacex = randval % total_mines;
+			for (int n = 0; n < 24 && mval>0; n++) {
+				spacex += randval & 31;  //64
+				if (spacex >= (total_lands))spacex %= total_lands;
+				randval = randval >> 2;
+				spaces[spacex] += (randval & 1 ? 1 : -2);
+				spacex += spaces[spacex];
+				mval--;
+
+			}
+
+		}
+		
+		absindex_toxy(spacex, x, y);
+		short minesset = 0;
+		short i = 0;
+		while (minesset != total_mines ) {
+			x += spaces[i++];
+			if (x >= width) {
+				y += x / width;
+				x = x % width;
+				if (y >= height)y = y % height;
+			}
+			if (setMine(x, y))minesset++;
+			if (i >= total_mines * 2) i = 0;
+		}
+	}
+	void rotate_Mineboard_Right(short num) {
+		num %= total_lands;
+		int tempboard[MM_emu_BAD][MM_emu_BAD];
+		CopyMemory( (((int*)tempboard)) +(sizeof(int)*num) , mineboard, sizeof(int) * (MM_emu_BAD * MM_emu_BAD));
+		short x = 0, y = 0;
+		for (int i = 0; i < num; i++) {
+			absindex_toxy(i, x, y);
+			tempboard[x][y] = mineboard[width - x][height - y];
+		}
+		CopyMemory(tempboard, mineboard, sizeof(int) * (MM_emu_BAD * MM_emu_BAD));
+	}
+
+	void slide_mineboard_right() {
+		short temp;
+		for (int i = 0; i < height; i++) {
+			temp = mineboard[0][i];
+			for (int n = 0; n < width-1; n++) {
+				mineboard[n][i] = mineboard[n + 1][i];
+			}
+			mineboard[width - 1][i] = temp;
+		}
+
+	}
+	void slide_mineboard_down() {
+		short temp;
+		for (int i = 0; i < width; i++) {
+			temp = mineboard[i][0];
+			for (int n = 0; n < height - 1; n++) {
+				mineboard[i][n] = mineboard[i][n+1];
+			}
+			mineboard[i][height-1] = temp;
+		}
+
+	}
+	void slide_mineboard_up() {
+		short temp;
+		for (int i = 0; i < width; i++) {
+			temp = mineboard[i][height-1];
+			for (int n = height-1; n >0; n--) {
+				mineboard[i][n] = mineboard[i][n - 1];
+			}
+			mineboard[i][0] = temp;
+		}
+
+	}
+	void slide_mineboard_left() {
+		int temp=0;
+		for (int i = 0; i < height; i++) {
+			temp = mineboard[width-1][i];
+			for (int n = width-1; n >0; n--) {
+				mineboard[n][i] = mineboard[n - 1][i];
+			}
+			mineboard[0][i] = temp;
+		}
+
+	}
+	void fix_danger() {
+		for (int i = 0; i < width ; i++) {
+			for (int n = 0; n < height ; n++) {
+				dangerboard[i][n] = 0;
+			}
+		}
+		for (int i = 0; i < width; i++) {
+			for (int n = 0; n < height; n++) {
+				if (mineboard[i][n] == MM_emu_MINEBOARD_VALUE_MINE) {
+					//increment dangerboard around here. 
+					MME_fast_array_inc((int*)dangerboard, MM_emu_BAD, MM_emu_BAD, i, n, 1);
+				}
+			}
+		}
+
+
+	}
+	void fill_mineboard_bunched() {
+		unsigned short spaces[2000];
+		short val = 67;//9 //14
+		short mval = total_mines * 2;
+		unsigned long long int randval;
+		for (int i = 0; i < (total_lands * 2); i++) {
+			spaces[i] = val;
+		}
+
+		short x = 0, y = 0;
+		short spacex = 0;
+		while (mval > 0) {
+			randval = G_VS_Rand3(G_VS_randMAX);
+			//spacex = randval % total_mines;
+			for (int n = 0; n < 40 && mval>0; n++) {
+				spacex += randval & 255;// 1,2 
+				if (spacex >= (total_lands))spacex %= total_lands;
+				randval = randval >> 1;
+				spaces[spacex] += (randval & 1 ? 1 : -3);
+				spaces[spacex] = (spaces[spacex] < 0 ? 0 : spaces[spacex]);
+				//spacex += spaces[spacex];
+				mval--;
+
+			}
+			spacex = spacex << 1;
+
+		}
+		spacex += randval & 127;
+		absindex_toxy(spacex, x, y);
+		short minesset = 0;
+		short i = 0;
+		short xmod, ymod;
+		short stopvalinc = total_mines / 6;
+		short stopval = stopvalinc;
+		do {
+			while (minesset != stopval) {
+				if (randval < 100000000) randval = G_VS_Rand3(G_VS_randMAX);
+				x += spaces[i++];
+			
+				if (x >= width) {
+					y += x / width;
+					x = x % width;
+					if (y >= height)y = y % height;
+				}
+				xmod = (randval & 3) - 2; ymod = ((randval >> 2) & 3) - 2;
+				randval = randval >> 4;
+				if (setMine(x, y))minesset++;
+				if ((minesset == stopval))break;
+
+				xmod = (randval & 3) - 2; ymod = ((randval >> 2) & 3) - 2;
+				randval = randval >> 2;
+				if (setMine(x + xmod, y + ymod))minesset++;
+				if (i >= total_mines * 2) i = 0;
+			}
+			stopval += stopvalinc;
+			if(stopval > total_mines) stopval = total_mines;
+			for (int b = 0; b < ((randval & 7) % 4)+1; b++) {
+				slide_mineboard_left();
+				slide_mineboard_up();
+			}
+			
+		} while (minesset != total_mines);
+		fix_danger();
+	}
+
+
+	void fill_mineboard_reallife() {
+		unsigned short spaces[2000];
+		short val = 6; //14
+		short mval = total_mines * 2;
+		unsigned long long int randval;
+		for (int i = 0; i < (total_lands * 2); i++) {
+			spaces[i] = val;
+		}
+
+		short x = 0, y = 0;
+		short spacex = 0;
+		while (mval > 0) {
+			randval = G_VS_Rand3(G_VS_randMAX);
+			//spacex = randval % total_mines;
+			for (int n = 0; n < 40 && mval>0; n++) {
+				spacex += randval & 127;// 1,2 
+				if (spacex >= (total_lands))spacex %= total_lands;
+				randval = randval >> 1;
+				spaces[spacex] += (randval & 1 ? 1 : -3);
+				spaces[spacex] = (spaces[spacex] < 0 ? 0 : spaces[spacex]);
+				//spacex += spaces[spacex];
+				mval--;
+			}
+			spacex = spacex << 1;
+		}
+		absindex_toxy(spacex, x, y);
+		short minesset = 0;
+		short i = 0;
+		short xmod, ymod;
+		while (minesset != total_mines) {
+			if (randval < 100000000) randval = G_VS_Rand3(G_VS_randMAX);
+			x += spaces[i++];
+			if (x >= width) {
+				y += x / width;
+				x = x % width;
+				if (y >= height)y = y % height;
+			}
+			
+			if (setMine(x, y))minesset++;
+			if ((minesset == total_mines))break;
+
+			xmod = (randval & 3) - 2; ymod = ((randval >> 2) & 3);
+			randval = randval >> 2;
+			//if (xmod == 0)continue;
+			if (setMine(x + xmod, y + ymod))minesset++;
+			if ((minesset == total_mines) || randval & 8)continue;
+
+			/*xmod = (randval & 3); ymod = ((randval >> 2) & 3) - 1;
+			randval = randval >> 2;
+			if (setMine(x + xmod, y + ymod))minesset++;
+			if ((minesset == total_mines) || randval & 8)continue;*/
+
+			if (i >= total_mines * 2) i = 0;
+		}
+	}
 
 	void console_output() {
 
@@ -358,10 +721,12 @@ public:
 			cout << "\n";
 		}
 		cout << "\n\n\n\n\nDanger\n";
+		HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 		for (int i = 0; i < height; i++) {
 			for (int n = 0; n < width; n++) {
-				
+					SetConsoleTextAttribute(hStdout, emu_danger_color[dangerboard[n][i]]);
 					cout << " " << dangerboard[n][i] << " ";
+					SetConsoleTextAttribute(hStdout, 7);
 			}
 			cout << "\n";
 		}
@@ -376,6 +741,94 @@ public:
 		}
 
 	}
+	void output_active() {
+		WORD atrs[8] = { 7,1,10,12,4,5,13,11 };
+		HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+		cout << "    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30  \n";
+		for (int y = 0; y < height; y++) {
+			cout << y + 1 << " ";
+			if (y < 9)cout << " ";
+
+			for (int x = 0; x < width; x++) {
+				if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_OPEN) {
+					if (dangerboard[x][y] > 0) {
+						SetConsoleTextAttribute(hStdout, atrs[dangerboard[x][y]]);
+						cout << " " << dangerboard[x][y] << " ";
+						SetConsoleTextAttribute(hStdout, atrs[0]);
+					}
+					else cout << "   ";
+				}
+				else {
+					cout << " # ";
+				}
+			}
+			cout << "\n\n";
+		}
+
+
+	}
+	void output_validate_stats() {
+		int lowminetot = stats_minetotals[0][0], himinetot = stats_minetotals[0][0];
+		long int runningtotal = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (stats_minetotals[x][y] > himinetot)himinetot = stats_minetotals[x][y];
+				if (stats_minetotals[x][y] < lowminetot) lowminetot = stats_minetotals[x][y];
+				runningtotal += stats_minetotals[x][y];
+			}
+		}
+		int tavg = runningtotal / (height * width), ttot = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				ttot += abs((int)(tavg - stats_minetotals[x][y]));
+			}
+		}
+
+		cout << "lowest freq: " << lowminetot << "\n highest freq: " << himinetot << "\naverage: " << tavg << "\n";
+		cout << "avg deviation from mean: " << ttot / (height * width) << "\n";
+	}
+	void tofile_mbf(string fname) {
+		ofstream ofile(fname.c_str(), ios::binary);
+		char temp;
+		temp = width;
+		ofile << temp;
+		temp = height;
+		ofile << temp;
+		temp = total_mines / 256;
+		ofile << temp;
+		temp = total_mines % 256;
+		ofile << temp;
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (mineboard[x][y] == MM_emu_MINEBOARD_VALUE_MINE) {
+					temp = x;
+					ofile << temp;
+					temp = y;
+					ofile << temp;
+				}
+			}
+		}
+		ofile.close();
+
+	}
+
+	void tofile_dotmine(string fname) {
+		ofstream ofile(fname.c_str());
+		ofile << width << "x" << height << "x" << total_mines << "\n";
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_FLAGGED)ofile << "F";
+				else if (activeboard[x][y] == MM_emu_ACTIVEBOARD_VALUE_OPEN) {
+					ofile << dangerboard[x][y];
+				}
+				else ofile << "H";
+			}
+			ofile << "\n";
+		}
+		ofile.close();
+	}
+
 };
 
 #endif
@@ -577,6 +1030,54 @@ if (minesset != total_mines) {
 					count++;
 				}
 			}
+		}
+	}
+		void fill_mineboard_spaced_b() {
+		unsigned short spaces[2000];
+		short val = total_lands / total_mines;
+		short mval = (total_lands % total_mines);
+		if (mval < 5) {
+			val--;
+			mval += total_mines;
+		}
+		val++;
+		mval *= 2;
+		mval += (total_mines / 2);
+		val = 13;
+		unsigned long long int randval;
+		for (int i = 0; i < (total_lands * 3); i++) {
+			spaces[i] = val;
+		}
+		short x = 0, y = 0;
+		short spacex = 0;
+		//mval *= 7;
+		//mval = total_lands * 2;
+		while (mval > 0) {
+			randval = G_VS_Rand3(G_VS_randMAX);
+			//spacex = randval % total_mines;
+			for (int n = 0; n < 24 && mval>0; n++) {
+				spacex += randval & 31;  //64
+				if (spacex >= (total_lands ))spacex %= total_lands ;
+				randval = randval >> 2;
+				spaces[spacex]++;
+				spaces[spacex] += (randval & 1 ? 0 : -2);
+				mval--;
+
+			}
+
+		}
+		//spacex = spacex >> 1;
+		absindex_toxy(spacex, x, y);
+		short minesset = 0;
+		short i = 0;
+		while (minesset != total_mines && i < total_mines * 2) {
+			x += spaces[i++];
+			if (x >= width) {
+				y += x / width;
+				x = x % width;
+				if (y >= height)y = y % height;
+			}
+			if (setMine(x, y))minesset++;
 		}
 	}
 	*/

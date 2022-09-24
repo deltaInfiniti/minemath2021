@@ -14,6 +14,7 @@
 // old max was 49x49
 // new max is 99x99
 #define GAME_TYPE 0
+#define OUTPUT_SEEDS 0
 
 
 //quick-click globals
@@ -1951,7 +1952,80 @@ void opusStayOnTop(HWND mywn, bool reverse = false) {
 		SWP_SHOWWINDOW);// window-positioning options);
 	delete rect;
 }
+short opus_get_maxd(short x, short y, short width, short height) {
+	if (x == 0) {
+		if (y == 0 || y == height - 1)return 3;
+		return 5;
+	}
+	if (x == width - 1) {
+		if (y == height - 1 || y == 0)return 3;
+		return 5;
+	}
+	if (y == 0)return 5;
+	if (y == height - 1)return 5;
+	return 8;
+}
 
+#define check_tempmines(x,y) if(tempmines[x][y])count++; 
+void opus_bs_loss_searchforsurrounded() {
+	bool tempmines[BAD][BAD];
+	bool tempmines2[BAD][BAD];
+	for (int x = 0; x < opus_sidesx; x++) {
+		for (int y = 0; y < opus_sidesy; y++) {
+			tempmines[x][y] = 0;
+			tempmines[x][y] = ( opusvs.buf_Get_Pixel((x * BIG_x) + (BIG_x / 2), (y * BIG_y) + (BIG_y / 2)  )) == 0;
+			tempmines2[x][y] = 0;
+			tempmines2[x][y] = (opusvs.buf_Get_Pixel((x * BIG_x) + (BIG_x / 2), (y * BIG_y) + (BIG_y / 4))) == 255;
+
+		}
+	}
+	short count = 0;
+	short fcount = 0;
+	for (int x = 0; x < opus_sidesx; x++) {
+		count = 0;
+		for (int y = 0; y < opus_sidesy; y++) {
+			if (tempmines2[x][y] && opusgrid[x][y] != 3) fcount++;
+			bool is_x_top = x < opus_sidesx - 1;
+			bool is_y_top = y < opus_sidesy - 1;
+			int ym = y - 1, yp = y + 1, xm = x - 1, xp = x + 1;
+			//cascade open cells
+			if (y > 0) {
+				check_tempmines(x, ym);
+				if (is_x_top) {
+					check_tempmines(xp, ym);
+				}
+			}
+			if (is_y_top)check_tempmines(x, yp);
+			if (x > 0) {
+				if (y > 0) {
+					check_tempmines(xm, ym);
+				}
+				if (is_y_top) {
+					check_tempmines(xm, yp);
+				}
+				check_tempmines(xm, y);
+			}
+			if (is_x_top) {
+				if (is_y_top) {
+					check_tempmines(xp, yp);
+				}
+				check_tempmines(xp, y);
+			}
+			if (tempmines[x][y] && count == opus_get_maxd(x, y, opus_sidesx, opus_sidesy)) {
+				//cout << "surrounded state found at "<<x<<":"<<y<<".  \n";
+				//opus_saveboard_analyzer_format(123, "surrounded");
+				//pause();
+			}
+			count = 0;
+		}
+		
+	}
+	if (fcount == opus_totalflags) {
+		cout << "probably won this game but solver thinks it lost\n" << endl;
+		pause();
+	}
+
+}
 
 //this function needs to be refactored in such a bad way......  it's become a bit.. unweildy.
 
@@ -2255,6 +2329,8 @@ void opus_main_thread_info(void* a) {
 				//opusvs.write_file(temp);//ctostr(opus_tframes) + 
 			}
 			else opus_games_lost_to_first_click++;
+			opus_bs_loss_searchforsurrounded();
+
 		}
 		winoutt.Lap();
 		//game is over, refresh grids, reset variables, click restart on game, do first click(s).
@@ -2373,6 +2449,7 @@ void opus_process_guessless_fileout() {
 	}
 }
 void opus_process_guessless_fileout_emu(MineMath_emulator* MSemu) {
+	if (!OUTPUT_SEEDS)return;
 	if (OPUS_DOGUESSES == 0 || !opus_guessed_this_game && GAME_TYPE == 0) {
 
 		int type = 1;
@@ -2404,7 +2481,7 @@ void opus_main_thread_emulator(void* emu) {
 	int h;
 	clrscr();
 	MSemu->reset();
-	MSemu->fill_mineboard5();
+	MSemu->fill_mineboard_bunched();//MSemu->fill_mineboard5();
 	MSemu->doClick(0, 0);
 	int x, y, w, hh;
 	int xxx = 0, yyy = 0;
@@ -2420,7 +2497,8 @@ void opus_main_thread_emulator(void* emu) {
 			if (GLOBAL_SLEEP_VALUE)Sleep(GLOBAL_SLEEP_VALUE);
 			fullframe.LapUnPause();
 			//clrscr();
-			//if(opus_tframs%100==0)MSemu->output_active();
+			//if(opus_tframs%100==0)
+			//MSemu->output_active();
 			//Sleep(100);
 
 			Magnum_flagged = 0;
@@ -2523,8 +2601,8 @@ void opus_main_thread_emulator(void* emu) {
 		reset_timer_frame(timer);
 		opus_fast_reset();
 		MSemu->reset();
-		MSemu->fill_mineboard5();
-		MSemu->validate();
+		MSemu->fill_mineboard8();//MSemu->fill_mineboard5();
+		//MSemu->validate();
 		MSemu->doClick(0, 0);
 		opus_tgames++;
 		opus_frames = 0;

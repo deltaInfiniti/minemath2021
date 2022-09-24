@@ -3,15 +3,178 @@
 //#define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE ((DPI_AWARENESS_CONTEXT)-2)
 
 //test 
+//#define VAL_MINESWEEPER_FAST_MOUSE 1
+
+#define Mouse_leftclick(){mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP,0,0,0,0);}
+#define Title(s) SetConsoleTitleA(s)
+
+#define ctocp(ch) ((char*)ch.c_str())
+#define GetPhysicalCursorPos(p) GetCursorPos(p) 
+#define SetPhysicalCursorPos(x,y) SetCursorPos(x,y)
+#define SHOW(a) cout << #a << ": " << (a) << "   "<<endl;
+#define SHOWf(a,b) b << #a << ": "<< (a) << endl;
+#define SHOWb(a,b) SHOW(a); b << #a << ": "<< (a) << endl;
+#define GLOBALSLEEP();// Sleep(1200);
+#define ctoint(s) atoi(s.c_str())
+
+#define ShowConsole() ShowWindow(GetConsoleWindow(),SW_SHOW);
+#define HideConsole() ShowWindow(GetConsoleWindow(),SW_HIDE);
+
+
+
+#include <complex.h>
+#include <ctgmath>
 #include <windows.h>
 #include <iostream>   
 #include <iomanip> 
 #include <fstream>
 #include <conio.h>
 #include <string.h> 
-#include<stdio.h>  
+#define _OPEN_SYS_ITOA_EXT
+#include<stdio.h> 
+#include<stdlib.h>
 using namespace std;
-#include "valtimer.h"
+void pause();
+string ctostr(int i);
+string creftostr(COLORREF a);
+#include"valtimer.h"
+#include <GdiPlus.h>
+#pragma comment( lib, "gdiplus" )
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+    using namespace Gdiplus;
+    UINT  num = 0;          // number of image encoders
+    UINT  size = 0;         // size of the image encoder array in bytes
+
+    ImageCodecInfo* pImageCodecInfo = NULL;
+
+    GetImageEncodersSize(&num, &size);
+    if (size == 0)
+        return -1;  // Failure
+
+    pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+    if (pImageCodecInfo == NULL)
+        return -1;  // Failure
+
+    GetImageEncoders(num, size, pImageCodecInfo);
+
+    for (UINT j = 0; j < num; ++j)
+    {
+        if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+        {
+            *pClsid = pImageCodecInfo[j].Clsid;
+            free(pImageCodecInfo);
+            return j;  // Success
+        }
+    }
+
+    free(pImageCodecInfo);
+    return 0;
+}
+/*
+void gdiscreen()
+{
+	using namespace Gdiplus;
+	GdiplusStartupInput gdiplusStartupInput;
+	ULONG_PTR gdiplusToken;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+	{
+		HDC scrdc, memdc;
+		HBITMAP membit;
+		scrdc = ::GetDC(0);
+		int Height = GetSystemMetrics(SM_CYSCREEN);
+		int Width = GetSystemMetrics(SM_CXSCREEN);
+		memdc = CreateCompatibleDC(scrdc);
+		membit = CreateCompatibleBitmap(scrdc, Width, Height);
+		HBITMAP hOldBitmap =(HBITMAP) SelectObject(memdc, membit);
+		BitBlt(memdc, 0, 0, Width, Height, scrdc, 0, 0, SRCCOPY);
+
+		Gdiplus::Bitmap bitmap(membit, NULL);
+		CLSID clsid;
+		GetEncoderClsid(L"image/jpeg", &clsid);
+		bitmap.Save(L"D:\\screen.jpeg", &clsid);
+
+		SelectObject(memdc, hOldBitmap);
+
+		DeleteObject(memdc);
+
+		DeleteObject(membit);
+
+		::ReleaseDC(0,scrdc);
+	}
+
+	GdiplusShutdown(gdiplusToken);
+}
+
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+	using namespace Gdiplus;
+	UINT  num = 0;          // number of image encoders
+	UINT  size = 0;         // size of the image encoder array in bytes
+
+	ImageCodecInfo* pImageCodecInfo = NULL;
+
+	GetImageEncodersSize(&num, &size);
+	if(size == 0)
+		return -1;  // Failure
+
+	pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+	if(pImageCodecInfo == NULL)
+		return -1;  // Failure
+
+	GetImageEncoders(num, size, pImageCodecInfo);
+
+	for(UINT j = 0; j < num; ++j)
+	{
+		if( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
+		{
+			*pClsid = pImageCodecInfo[j].Clsid;
+			free(pImageCodecInfo);
+			return j;  // Success
+		}    
+	}
+
+	free(pImageCodecInfo);
+	return 0;
+}*/
+WCHAR* ctolpwstr(string& s);
+void gdiSaveHbitmap(HBITMAP &membit, string fname)
+{
+    using namespace Gdiplus;
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    {
+
+        Gdiplus::Bitmap bitmap(membit, NULL);
+        CLSID clsid;
+        GetEncoderClsid(L"image/jpeg", &clsid);
+
+        bitmap.Save(ctolpwstr(fname), &clsid);
+
+    }
+
+    GdiplusShutdown(gdiplusToken);
+}
+//void GDIPtext(HBITMAP& bitm, string text) {
+//    using namespace Gdiplus;
+//    GdiplusStartupInput gdiplusStartupInput;
+//    ULONG_PTR gdiplusToken;
+//    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+//
+//    {
+//        Gdiplus::Bitmap bitmap(bitm, NULL);
+//        Image* img = new Image();
+//        Image::fromHbitmap
+//        Graphics* gdipx = new Graphics(img);
+//        FontFamily  fontFamily(L"Times New Roman");
+//        Font        font(&fontFamily, 24, FontStyleRegular, UnitPixel);
+//        PointF      pointF(30.0f, 10.0f);
+//        SolidBrush  solidBrush(Color(255, 0, 0, 255));
+//    }
+//}
 
 int BIG_x = -1, BIG_y = -1;// cell offsets to boarder pixels for easy access
 
@@ -51,21 +214,6 @@ corner 255,255,255        16777215
     HWNDrect board offsets: _MWOx+=20;  _MWOy+=128;  _MWw-=39;  _MWh-= 147;
 */
 /***************************************macros and redefs *****************************************************/
-#define Mouse_leftclick(){mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP,0,0,0,0);}
-#define Title(s) SetConsoleTitleA(s)
-
-#define ctocp(ch) ((char*)ch.c_str())
-#define GetPhysicalCursorPos(p) GetCursorPos(p) 
-#define SetPhysicalCursorPos(x,y) SetCursorPos(x,y)
-#define SHOW(a) cout << #a << ": " << (a) << "   "<<endl;
-#define SHOWf(a,b) b << #a << ": "<< (a) << endl;
-#define SHOWb(a,b) SHOW(a); b << #a << ": "<< (a) << endl;
-#define GLOBALSLEEP();// Sleep(1200);
-#define ctoint(s) atoi(s.c_str())
-
-#define ShowConsole() ShowWindow(GetConsoleWindow(),SW_SHOW);
-#define HideConsole() ShowWindow(GetConsoleWindow(),SW_HIDE);
-
 
 
 // global compile options
@@ -134,20 +282,20 @@ void pause() {
     GLOBAL_RUNTIMER.LapUnPause();
 
 }
-string ctostr(int i) {
-    char a[38];
-    _itoa_s(i, a, 10);
-    return a;
-}
+//string ctostr(int i) {
+//    char a[38];
+//    _itoa_s(i, a, 10);
+//    return a;
+//}
 
-string creftostr(COLORREF a) {
-    string ret = ctostr((unsigned int)GetRValue(a));
-    ret += ",";
-    ret += ctostr((unsigned int)GetGValue(a));
-    ret += ",";
-    ret += ctostr((unsigned int)GetBValue(a));
-    return ret;
-}
+//string creftostr(COLORREF a) {
+//    string ret = ctostr((unsigned int)GetRValue(a));
+//    ret += ",";
+//    ret += ctostr((unsigned int)GetGValue(a));
+//    ret += ",";
+//    ret += ctostr((unsigned int)GetBValue(a));
+//    return ret;
+//}
 bool OPUS_trainer_Normalized = true;
 bool OPUS_trainer_safeclicks = true;
 bool OPUS_trainer_flags = true;
@@ -156,9 +304,29 @@ bool OPUS_MAGNUMB_drawdomains = false;
 #include "minemath_emu.h"
 #include "ValScreenwrapper.h" 
 #include "opus.h"
-#include <Windows.h>
-#include <WinUser.h>
+/*********************windowed mode stuff*********************************/
+#include <windows.h>
+#include<windowsx.h>
+#include <winuser.h> 
+#include "shellscalingapi.h"
+#include <ctime>
+#include <cmath> 
+#include <iostream>   
+#include <iomanip> 
+#include <sys/timeb.h>
+#include <fstream>
+#include <process.h> 
+#include <conio.h>
+#include <string> 
+#include<stdio.h>  
+#include<fcntl.h>
+#include<io.h> 
+#include"ValWindowManager.h"
+bool neo_loginfunc(string uname, string pw, string** status) {//needed for hypervisor bs.
+    return false;
+}
 
+/*end windowed mode stuff*/
 void opus_output_info(string fname);
 void opus_output_vs(); 
 void opus_reset_opusvs();
@@ -1057,7 +1225,166 @@ string binout(long long int num) {
     cout << b;
     return "";
 }
-int main_tes() { // emu_tester
+int main_emuplayer() {
+    G_VS_RANDSEED(getticks());
+    MineMath_emulator testemu(30, 16, 99);
+    testemu.play();
+}
+short bitstuff2(unsigned char& in, unsigned long long int& out,short &bitsleft, unsigned short bits, unsigned short outpos) {
+    
+    unsigned long long int mask=0;
+    short i = 0;
+    
+    for (; i < bits && bitsleft; i++) {
+        mask = mask | ((in & 128)?1:0);
+        mask = mask << 1;
+        in = in << 1;
+        bitsleft--;
+        //cout << i<<"out: " << out << "  mask: " << mask << " outpos" << outpos << "\n";
+    }
+    
+    short shift = outpos-1; //- (9 - i);
+    //cout << "0out: " << out << "  mask: " << mask << " outpos" << outpos << " shift: " <<shift <<"\n";
+    if (shift > 0) mask = mask << shift;
+    else if(shift < 0) mask = mask >> (shift*-1) ;
+
+    //cout << "out: " << out << "  mask: " << mask << " outpos" << outpos << "\n";
+    out = out | (mask );
+    return i;
+}
+short bitstuff(unsigned char& in, unsigned long long int& out, short& bitsleft, unsigned short bits, unsigned short outpos) {
+
+    unsigned long long int mask = 255 & in;
+    short btc = (bitsleft > bits ? bits : bitsleft);//  bitsleft - bits : bits - bitsleft);
+    mask = (mask >> (8- btc) ) << outpos;
+    in = in << btc;
+    bitsleft = (bitsleft > bits ? bitsleft - bits : 0);
+    out = out | mask;
+    return btc;
+
+}
+
+void weirdtest() {
+
+    unsigned long long int one = 4629771061636907008;
+    unsigned long long int two = 3467824696330821664;
+    unsigned long long int three = 289356293373428736;
+    unsigned long long int four = 284773528503041;
+    one = one | two | three | four;
+    for (int i = 0; i < 8; i++) {
+        cout << (char)((one >> (56 - (i * 8))));
+    }
+
+
+}
+
+int main_validate_slidingseeds() {
+    StayOnTop(1800, 1800);
+    string seeds = "I am a seed string hear me roar";
+    valVeryRandom vvr(seeds, 500, 1, 0, 29);
+    foreach(i, vvr.randlen) {
+        cout << "randseed " << i << ":" << vvr.intseeds[i]<<"\n";
+    }
+    foreach(i, 15) {
+        cout << "value: " << vvr.next() << "\n";
+    }
+    pause();
+    cout << sizeof(short int) << endl;
+    unsigned char a = 128;
+    unsigned char ta = 255;
+    unsigned long long int rec = 64, rec2 = 0, rec3 = 0, rec4 = 0;
+    short bitsleft = 8;
+ 
+
+
+    rec = 0;
+    bitsleft = 0;
+    string test = "testing!";
+    for (int i = 0; i < 8; i++) {
+        a = test[i];
+        bitsleft = 8;
+        cout << rec << " : " << (int)a << "\n";
+        bitstuff(a, rec, bitsleft, 2, 62-(i * 8));
+        cout << rec << " : " << (int)a << "\n";
+        bitstuff(a, rec2, bitsleft, 2, 60 - (i * 8));
+        cout << rec << " : " << (int)a << ":"<<bitsleft<<"\n";
+        bitstuff(a, rec3, bitsleft, 2, 58 - (i * 8));
+        cout << rec << " : " << (int)a << ":" << bitsleft << "\n";
+        bitstuff(a, rec4, bitsleft, 2, 56 - (i * 8));
+        cout << rec << " : " << (int)a << ":" << bitsleft << "\n";
+    }
+
+    cout << rec << "\n";
+    cout << rec2 << "\n";
+    cout << rec3 << "\n";
+    cout << rec4 << "\n";
+    
+    std::bitset<64> b(rec),d(rec2),e(rec3),f(rec4);
+    cout << b << "\n" << d <<"\n"<< e << "\n" <<f<< "\n";
+    short temp = 0;
+    rec = rec | rec2 |rec3|rec4;
+    std::bitset<64> g(rec);
+    cout << g << endl;
+    for (int i = 0; i < 8; i++) {
+        //cout << (char)( ((char*)(&rec))+i);
+        //cout << ((rec>>(i*8))<<64-)
+        //temp = 56 - (i * 8);
+        //cout << (char)(((rec << temp) >> 64 - temp));
+        cout << (char)((rec >> (56-(i * 8))));
+    }
+
+    pause();
+
+}
+
+int mainrt(){ // randomness tester
+    _beginthread(calibrate_timer_thread, 0, NULL);
+    Sleep(1100);
+    int loopcount = 100000000;
+    const int space = 1000;
+    unsigned long long int rset[space];
+    foreach(i, space) {
+        rset[i] = 0;
+    }
+    valRandom vrand(getticks());
+    string ts = "I am a sufficient seed string";
+    valVeryRandom vvr(ts, space, 1, 0, 48);
+    vrand.setrandmax(space);
+    ValStopwatch stop;
+    stop.LapUnPause();
+    foreach(i, loopcount) {
+        rset[vvr.next()]++;
+        //rset[vrand.next()]++;
+        //rset[G_VS_Rand5(space)]++;
+    }
+    stop.Lap();
+    
+    int low = rset[0];
+    int high = rset[0];
+    int avg = 0;
+    foreach(i, space) {
+        cout << rset[i] << "  ";
+        if (i % 20 == 0)cout << "\n";
+        if (rset[i] > high)high = rset[i];
+        if (rset[i] <low)low = rset[i];
+        avg += rset[i];
+    }
+    cout << "expected avg: " << loopcount / space << "\n";
+    int disc = (avg / space), rtot = 0;
+    cout << "actual: " << disc << "\n";
+    foreach(i, space) {
+        rtot += abs((long int)(disc - rset[i]));
+    }
+    cout << "Low: " << low << "\n";
+    cout << "high: " << high << "\n";
+    cout << "avg discrepency: " << rtot/space << "\n";
+    cout << "loopcount: " << loopcount << "\n";
+    stop.output("doing random loops x"+ctostr(loopcount));
+    pause();
+}
+#define emutestmethod() testemu.fill_mineboard_seeded1();
+int main_emutester() { // emu_tester
+    StayOnTop(1800, 1800);
     G_VS_RANDSEED(getticks());
     _beginthread(calibrate_timer_thread, 0, NULL);
     //while (1) {
@@ -1067,37 +1394,49 @@ int main_tes() { // emu_tester
     MineMath_emulator testemu(30, 16, 99);
     //cout << testemu.get_maxd(0, 0) << "  " << testemu.get_maxd(0, 1) << "  " << testemu.get_maxd(30, 16) << "  \n";
     //pause();
-
-    
-    Sleep(3300); 
-    testemu.play();
+    string ts = " I am a sufficient seed string";
+    testemu.fill_mineboard_seeded(ts);
+    Sleep(2300); 
+    //testemu.play();
 
 
     ValStopwatch stop,watch;
     watch.LapUnPause();
     for (int x = 0; x < 10000; x++) {
         stop.LapUnPause();
-        testemu.fill_mineboard5();
+        emutestmethod();
         stop.Lap();
         testemu.reset();
+       // cout << x << "\r";
     }
+    cout << "            \r";
     watch.Lap();
     watch.output("watch");
     stop.output("filling board");
     testemu.reset();
-   
-    for (int x = 0; x < 100000; x++) {
-        testemu.fill_mineboard5();
-        testemu.validate();
+    short vcheck = 0;
+    int tval = (10000 / (99))*480; // 480 * 990;
+    for (int x = 0; x < tval; x++) {
+        emutestmethod();
+        if (!testemu.validate()) {
+            vcheck++;
+        }
         testemu.reset();
     }
+
+
+    cout << "total boards validated: " << tval << "\n";
+    cout << "total mines set: " << tval * testemu.total_mines << "\n";
+    cout << "validate failed: " << vcheck<< "\n";
     cout << "total validate changes: " << testemu.total_validate_changes << "\n";
+    cout << "danger_under_Mines average: " << testemu.stats_totaldangerundermines / tval << "\n";
     testemu.console_output_stats();
+    testemu.output_validate_stats(); 
     pause();
     
     while (1) {
         stop.LapUnPause();
-        testemu.fill_mineboard5();
+        emutestmethod();
         stop.Lap();
         testemu.console_output();
         if(!testemu.validate())cout << "validate failed\n";
@@ -1109,7 +1448,7 @@ int main_tes() { // emu_tester
 
 }
 
-int main_r() {// minemath2021 WR bot runner 
+int mainrr() {// minemath2021 WR bot runner 
 
     //pause();
     //Rename_all_files_in_directory(".mine");
@@ -1140,7 +1479,7 @@ int main_r() {// minemath2021 WR bot runner
     return 0;
 }
 
-int main() {// emulator runner
+int mainer() {// emulator runner
 
 
     //pause();
@@ -1204,7 +1543,7 @@ int maint() {// minemath2021 trainer main
     }
     return 0;
 }
-int main_mdtrainer() {// minemath2021 trainer main
+int maintr() {// minemath2021 trainer main
 
     _beginthread(calibrate_timer_thread, 0, NULL);
     opusvs.Set(300, 300, 1800, 1800);
@@ -1216,7 +1555,10 @@ int main_mdtrainer() {// minemath2021 trainer main
     gotoxy(0, 3);
     StayOnTop(800, 1800);
     opus_HWND_move_resize(GetConsoleHwnd(), 60, 50, 800, 1000);
-    opus_trainer_hwnd = trainer.create_transparent_window(865, 585, 800, 500);//(300,300,800,800);  
+    if (OPUS_Testing_noscaling) {
+        opus_trainer_hwnd = trainer.create_transparent_window(861, 559, 800, 500);//(300,300,800,800);  
+    }
+    else opus_trainer_hwnd = trainer.create_transparent_window(865, 585, 800, 500);//(300,300,800,800);  
     //opusvs.condc = GetDC(opus_trainer_hwnd);
     //opusvs.create_transparent_window(840, 60, 730, 590);
     opusvs.create_transparent_window(840, 60, 730, 590);
@@ -1288,7 +1630,7 @@ BOOL CALLBACK enumcallback(HWND hwnd, LPARAM lParam) {
 
     return TRUE;
 }
-int main_windows() {
+int main_window_find() {
     std::vector<std::wstring> titles;
     EnumWindows(enumcallback, reinterpret_cast<LPARAM>(&titles));
     // At this point, titles if fully populated and could be displayed, e.g.:
@@ -1307,3 +1649,828 @@ int main_windows() {
 
 
 
+/*           MS windowed mode start here                                  */
+char MS_watchboard[99][99];
+short MS_OFFSETx = 15;
+short MS_OFFSETy = 60;
+#define MS_G_cell_width 16
+ValGFX MS_gfx_copybuffer;
+void MS_runonce(ValGFX* mygfx,ValGFX* defgfx,short width, short height) {//, ValWindow* wind
+    // draw a standard board to mygfx, copy that to defgfx
+    // initialize globals 
+    defgfx->Get_blank_buffer((width * MS_G_cell_width) + 6, (height * MS_G_cell_width) + 6);
+    MS_gfx_copybuffer.Get_blank_buffer((width * MS_G_cell_width) + 6, (height * MS_G_cell_width) + 6);
+    mygfx->makecolor(VRGB_GREY_VVLIGHT);
+
+    foreach(x, width+1) {
+        if(x<width)mygfx->drawline2(MS_OFFSETx+( x * MS_G_cell_width), MS_OFFSETy-1, height * MS_G_cell_width, 0, 2, VRGB_WHITE);
+        if(x>0)mygfx->drawline2(MS_OFFSETx + (x * MS_G_cell_width) - 2, MS_OFFSETy, height * MS_G_cell_width, 0, 2, VRGB_GREY_VLIGHT+(VRGB_111*1));
+    }
+    foreach(y, height+1) {
+        if (y < height )mygfx->drawline2(MS_OFFSETx-1 , (y* MS_G_cell_width)+ MS_OFFSETy , width * MS_G_cell_width, 1, 2, VRGB_WHITE);        cout << "runonce2.1"<<y<<"\n";
+        if (y > 0)mygfx->drawline2(MS_OFFSETx,(y * MS_G_cell_width)+ MS_OFFSETy - 2, width * MS_G_cell_width, 1, 2, VRGB_GREY_VLIGHT+(VRGB_111 * 1));
+    }
+    mygfx->drawline2(MS_OFFSETx -3, MS_OFFSETy, (height * MS_G_cell_width)+3, 0, 3, VRGB_GREY_VLIGHT + (VRGB_111 * 1));
+    mygfx->drawline2(MS_OFFSETx-3 , MS_OFFSETy-3, (width * MS_G_cell_width)+6, 1, 3, VRGB_GREY_VLIGHT + (VRGB_111 * 1));
+
+    mygfx->drawline2(MS_OFFSETx + (width* MS_G_cell_width), MS_OFFSETy, height * MS_G_cell_width, 0, 3, VRGB_WHITE);
+    mygfx->drawline2(MS_OFFSETx, MS_OFFSETy +(height* MS_G_cell_width), (width * MS_G_cell_width)+3, 1, 3, VRGB_WHITE);
+    int xtop, ytop, xbot, ybot;
+    foreach(y, height ) {
+        foreach(x, width ) {
+            
+            xtop = MS_OFFSETx + (x * MS_G_cell_width) + (MS_G_cell_width);
+            ytop = MS_OFFSETy + (y * MS_G_cell_width);
+            xbot = MS_OFFSETx + (x * MS_G_cell_width);
+            ybot = MS_OFFSETy + (y * MS_G_cell_width) + (MS_G_cell_width);
+            
+            mygfx->editpixel(xtop-1,ytop , VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+            mygfx->editpixel(xtop - 2, ytop+1, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+
+            mygfx->editpixel(xbot , ybot-1, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+            mygfx->editpixel(xbot +1, ybot-2, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+            
+            mygfx->editpixel(xtop - 1, ytop+1, VRGB_GREY_VLIGHT + (VRGB_111 * 1));
+            mygfx->editpixel(xbot, ybot - 2, VRGB_WHITE);
+        }
+    }
+    xtop = MS_OFFSETx + (width * MS_G_cell_width);
+    mygfx->editpixel(xtop+2, MS_OFFSETy-3, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+    mygfx->editpixel(xtop+1, MS_OFFSETy - 2, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+    mygfx->editpixel(xtop, MS_OFFSETy - 1, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+
+    mygfx->editpixel(xtop + 2, MS_OFFSETy - 2, VRGB_WHITE);
+    mygfx->editpixel(xtop + 2, MS_OFFSETy - 1, VRGB_WHITE);
+    mygfx->editpixel(xtop + 1, MS_OFFSETy - 1, VRGB_WHITE);
+
+    ytop = MS_OFFSETy + (height * MS_G_cell_width) ;
+    mygfx->editpixel(MS_OFFSETx - 3, ytop + 2, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+    mygfx->editpixel(MS_OFFSETx - 2, ytop + 1, VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+    mygfx->editpixel(MS_OFFSETx - 1, ytop , VRGB_GREY_VLIGHT + (VRGB_111 * 60));
+
+    mygfx->editpixel(MS_OFFSETx - 2, ytop + 2, VRGB_WHITE);
+    mygfx->editpixel(MS_OFFSETx - 1, ytop + 2, VRGB_WHITE);
+    mygfx->editpixel(MS_OFFSETx - 1, ytop + 1, VRGB_WHITE);
+    
+
+    
+    //defgfx->CopySectionToGFX(*mygfx, MS_OFFSETx - 3, MS_OFFSETy - 3, (width* MS_G_cell_width) + 8, (height* MS_G_cell_width) + 8, 0, 0);
+    //cout << "finished copying" << endl;
+    //defgfx->CopyToGFX(*mygfx, 0, 0);
+
+    mygfx->CopySectionToGFX(*defgfx,0,0, (width* MS_G_cell_width) + 8, (height* MS_G_cell_width) + 8, MS_OFFSETx - 3, MS_OFFSETy - 3);
+    cout << "finished copying" << endl;
+    mygfx->makewhite();
+    defgfx->CopyToGFX(*mygfx, MS_OFFSETx, MS_OFFSETy);
+    defgfx->CopyToGFX(MS_gfx_copybuffer, 0, 0);
+
+    Opus_vtc.fontdat.lfHeight = 17;
+    Opus_vtc.fontdat.lfWeight = 620;
+
+}
+
+bool MS_G_GAME_LOST = false;
+bool MS_G_SEEDED_GAME = false;
+bool MS_G_firstclick = false;
+void MS_reset(void* vwind) {
+    string type;
+    MS_G_firstclick = false;
+    MS_G_GAME_LOST = false;
+
+    cout << "reset1\n";
+    ValWindow* wind = (ValWindow*)vwind;
+    MineMath_emulator* mm_emu = (MineMath_emulator*)wind->get_associated_data("MBoard_");
+    ValGFX* copy_board = (ValGFX*)wind->get_associated_data("BBoard_gfx");
+    ValStopwatch* boardtimer = (ValStopwatch*)WindowMan.find_registered_data("BoardTimer", type);
+    boardtimer->Stop();
+    cout << "reset2\n";
+    mm_emu->reset();
+    if (MS_G_SEEDED_GAME) mm_emu->fill_mineboard_seeded1_2();
+    else mm_emu->fill_mineboard5();
+    copy_board->CopyToGFX(wind->mygfx, MS_OFFSETx, MS_OFFSETy);
+    //refill board
+    //fill window->mygfx with blank board copy
+    wind->GFXdraw();
+    //render to window
+    cout << "reset3\n";
+    //reset watchboard
+    foreach(xx, mm_emu->width) {
+        foreach(yy, mm_emu->height) {
+            MS_watchboard[xx][yy] = 0;
+        }
+    }
+    cout << "reset4\n";
+    mm_emu->console_output();
+
+}
+void MS_resize(ValWindow* wind, short width, short height, short mines) {
+    MineMath_emulator* mm_emu = (MineMath_emulator*)wind->get_associated_data("MBoard_");
+   // wind->s
+    // alter window size to fit new board dims
+    // reset all GFX sizes and buffers
+    // recall initial draw
+    // reset emu, refill board
+
+}
+void MS_copy_def(ValGFX* mygfx, ValGFX* defgfx) {
+
+
+}
+
+
+void MS_EMU_NUMBERCOLOR(short val) {
+    switch (val) {
+    case 0: Opus_vtc.SetColor(VRGB_ORANGE); break;
+    case 1: Opus_vtc.SetColor(VRGB_BLUE); break;
+    case 2: Opus_vtc.SetColor(VRGB_GREEN_LIGHT & VRGB_GREY_LIGHT); break;
+    case 3: Opus_vtc.SetColor(VRGB_RED_LIGHT); break;
+    case 4: Opus_vtc.SetColor(VRGB_BLUE & VRGB_GREY_VLIGHT); break;
+    case 5: Opus_vtc.SetColor(VRGB_RED_DARK); break;
+    case 6: Opus_vtc.SetColor(VRGB_PINK); break;
+    case 7: Opus_vtc.SetColor(VRGB_PURPLE); break;
+    case 8: Opus_vtc.SetColor(VRGB_BLUE_DARK); break;
+    case 9: Opus_vtc.SetColor(VRGB_BLUE_DARK); break;
+    };
+
+}
+void MS_render_board(void* vwind) {
+    ValWindow* wind = (ValWindow*)vwind;
+    MineMath_emulator* mm_emu = (MineMath_emulator*)wind->get_associated_data("MBoard_");
+    ValGFX* mygfx = (ValGFX*) (&(wind->mygfx));
+    short val = 0;
+    bool latch = false;
+    //for loop through mm_emu activeboard
+
+    foreach(xx, mm_emu->width) {
+        foreach(yy, mm_emu->height) {
+            if (MS_watchboard[xx][yy] != 1) {// if cell is active, and not already in watchboard
+                val = mm_emu->getCellValue(xx, yy);
+                
+                if (val != 9) {
+                    
+                    
+                    if (val == 10) {
+                        if (MS_watchboard[xx][yy] == 2)continue;
+                        Opus_vtc.content = (char)'f';
+                        MS_watchboard[xx][yy] = 2;
+                        Opus_vtc.SetColor(0);
+                    }
+                    else {
+                        mygfx->color_section(MS_OFFSETx + (xx * MS_G_cell_width) + 3, MS_OFFSETy + (yy * MS_G_cell_width) + 3, MS_G_cell_width - 1, MS_G_cell_width - 1, VRGB_GREY_VVLIGHT);
+                        //mygfx->draw_square(MS_OFFSETx + (xx * MS_G_cell_width), MS_OFFSETy + (yy * MS_G_cell_width)
+                        //    , MS_OFFSETx + (xx * MS_G_cell_width) + MS_G_cell_width - 1, MS_OFFSETy + (yy * MS_G_cell_width) + MS_G_cell_width - 1
+                        //    , VRGB_GREY_VVLIGHT);//  overwrite cell boarder with grey
+                        MS_watchboard[xx][yy] = 1;
+                        if (val < 1)continue;
+                        Opus_vtc.content = ctostr(val);
+                        MS_EMU_NUMBERCOLOR(val);
+                    }
+                    latch = true;
+                    
+                    //  draw number or flag in center of tile if nessesary  
+                    
+                    Opus_vtc.x =2 + MS_OFFSETx + (xx * MS_G_cell_width) + ((MS_G_cell_width - Opus_vtc.getrealtwidth()) / 2);
+                    Opus_vtc.y = MS_OFFSETy + (yy * MS_G_cell_width) + 3;
+                    
+                    Opus_vtc.DIBdraw(wind->myhdc, wind->mygfx.hbmp);
+                    
+                }
+                else if(MS_watchboard[xx][yy] == 2){ // color previously flagged, now un-flagged cell
+                    mygfx->color_section(MS_OFFSETx + (xx * MS_G_cell_width) + 6, MS_OFFSETy + (yy * MS_G_cell_width) + 6, MS_G_cell_width - 7, MS_G_cell_width - 6, VRGB_GREY_VVLIGHT);
+                    MS_watchboard[xx][yy] = 0;
+                }
+            }
+        }
+
+    }
+    if (latch)wind->GFXdraw();//render to window
+    
+}
+void MS_render_board_loss(void* vwind, int x, int y) {
+    ValWindow* wind = (ValWindow*)vwind;
+    MineMath_emulator* mm_emu = (MineMath_emulator*)wind->get_associated_data("MBoard_");
+    ValGFX* mygfx = (ValGFX*)(&(wind->mygfx));
+    short val = 0;
+    bool latch = false;
+    //for loop through mm_emu activeboard
+
+    foreach(xx, mm_emu->width) {
+        foreach(yy, mm_emu->height) {
+            // check if cell is mine
+            if (mm_emu->mineboard[xx][yy] == MM_emu_MINEBOARD_VALUE_MINE) {
+
+                if (mm_emu->activeboard[xx][yy] != MM_emu_ACTIVEBOARD_VALUE_FLAGGED) {
+                    //   if mine and not flag, reveal as mine
+                    if(x==xx && y==yy) mygfx->color_section(MS_OFFSETx + (xx * MS_G_cell_width) + 4, MS_OFFSETy + (yy * MS_G_cell_width) + 4, MS_G_cell_width - 4, MS_G_cell_width - 4, VRGB_RED);
+                    short temp = Opus_vtc.fontdat.lfWeight;
+                    //Opus_vtc.fontdat.lfWeight = 10;
+                    Opus_vtc.fontdat.lfWidth = 14;
+                    Opus_vtc.content = "M";
+                    Opus_vtc.x = 3 + MS_OFFSETx + (xx * MS_G_cell_width) + ((MS_G_cell_width - Opus_vtc.getrealtwidth()) / 2);
+                    Opus_vtc.y = MS_OFFSETy + (yy * MS_G_cell_width) + 3;
+                    Opus_vtc.SetColor(VRGB_RED);
+                    Opus_vtc.DIBdraw(wind->myhdc, wind->mygfx.hbmp);
+                    Opus_vtc.fontdat.lfWidth = 0;
+                    //Opus_vtc.fontdat.lfWeight = temp;
+                }
+            }
+            else if (mm_emu->activeboard[xx][yy] == MM_emu_ACTIVEBOARD_VALUE_FLAGGED) {
+                
+                Opus_vtc.content = "X";
+                short temp = Opus_vtc.fontdat.lfWeight;
+                Opus_vtc.fontdat.lfWeight = 400;
+                Opus_vtc.x = 3 + MS_OFFSETx + (xx * MS_G_cell_width) + ((MS_G_cell_width - Opus_vtc.getrealtwidth()) / 2);
+                Opus_vtc.y = MS_OFFSETy + (yy * MS_G_cell_width) + 2;
+                Opus_vtc.SetColor(VRGB_RED);
+                Opus_vtc.DIBdraw(wind->myhdc, wind->mygfx.hbmp);
+                Opus_vtc.fontdat.lfWeight = temp;
+                // else if flag, x out flag 
+            }
+            
+            
+        }
+    }
+    wind->GFXdraw();
+}
+
+int capcount = 0;
+
+void MS_mousecapture_process(void* vwind) {
+
+    string type;
+    ValWindow* wind = (ValWindow*)vwind;
+    MineMath_emulator* mm_emu = (MineMath_emulator*)wind->get_associated_data("MBoard_");
+    ValGFX* copy_board= (ValGFX*)wind->get_associated_data("BBoard_gfx");
+    ValStopwatch* boardtimer = (ValStopwatch*)WindowMan.find_registered_data("BoardTimer", type);
+    int x = wind->mouse_cap->x;
+    int y = wind->mouse_cap->y;
+    bool click_in_board = false;
+    short cell_width = MS_G_cell_width;
+    
+    //if (x > MS_OFFSETx && y > MS_OFFSETy)click_in_board = true;
+    // criticalsect mutex??
+    switch (wind->mouse_cap->type) {
+    case VW_MOUSECAP_MOVE:
+        return;
+        break;
+    case VW_MOUSECAP_RCLICK:
+        if (MS_G_GAME_LOST) return;
+        x -= MS_OFFSETx; y -= MS_OFFSETy;
+        x /= cell_width;
+        y /= cell_width;
+        cout << "right click at: " << x << ":" << y << "\n";
+        mm_emu->doClick(x, y, true);
+        MS_render_board(wind);
+        break;
+
+    case VW_MOUSECAP_CLICK:
+        if (x > (wind->clientwidth / 2) - 25 && x < (wind->clientwidth / 2) + 25 && y> 5 && y < 55) {
+            // reset button clicked
+            cout << "reset button clicked" << endl;
+            MS_reset(wind);
+            return;
+        }
+        if (MS_G_GAME_LOST) return;
+        if(x > MS_OFFSETx&& y > MS_OFFSETy  && (x < MS_OFFSETx+(mm_emu->width*cell_width) && y < MS_OFFSETy + (mm_emu->height * cell_width)) ){
+        //if (click_in_board) {
+            
+            x -= MS_OFFSETx; y -= MS_OFFSETy;
+            x /= cell_width;
+            y /= cell_width;
+            cout << "clicked mine cell at: " << x << ":" << y << "\n";
+            if (!mm_emu->doClick(x, y)) {
+                
+                boardtimer->Stop();
+                cout << "game lost" << endl;
+                MS_render_board_loss(wind,x,y);
+                MS_G_GAME_LOST = true;
+                //MS_reset(wind);
+            }else if (!MS_G_firstclick) {
+                
+                boardtimer->Start();
+                MS_G_firstclick = true;
+            }
+            MS_render_board(wind);
+        }
+        
+        break;
+    }
+
+    if (mm_emu->checkWin()) {
+        
+        boardtimer->Stop();
+        cout << "game won in " << boardtimer->GetTime() << "ms\n";
+        MS_G_GAME_LOST = true; // technically this is 'game over' now, not just lost. but eh.
+    }
+    wind->GFXdraw();
+    
+
+}
+
+
+void MSGUI_resetbut(void* a) {
+    
+    ValWindow* controller = WindowMan.fromHWND((HWND)a);
+    ValWindow* wind = (ValWindow*)controller->get_associated_data("SweeperVW");
+    MineMath_emulator* mm_emu = (MineMath_emulator*)wind->get_associated_data("MBoard_");
+    string temp = controller->eval_edit("SeedBox");
+    cout << "filled mineboard with seed: " << temp << "\n";
+    mm_emu->fill_mineboard_seeded(temp);
+    MS_G_SEEDED_GAME = true;
+    MS_reset(wind);
+    
+    
+}
+void MS_generate_new_seedbut(void* a) {
+    
+    srand(getticks() & 0x1111111111111111); 
+    ValWindow* controller = WindowMan.fromHWND((HWND)a);
+    controller->set_editctrl_text("SeedBox", randstr(16));
+
+}
+
+volatile void build_ms_controller(ValWindow* wind) {
+    srand(getticks() & 0x1111111111111111);
+    string randst = randstr(12);
+    cout << "random string: " << randst << "\n";
+    wind->AddControl("title=SeedBox,type=VC_EDIT,text=" +randst +",x=55,y=68,w=340,h=26,numblurs=0,transparent=true,nointeract=true,tabname=WidthBox");
+    wind->AddControl("title=GenerateBut,type=VC_BUTTON,text=Generate Seeded Board,x=54,y=99,w=340,h=26,dataname=reset_but,needsparent=true");
+    wind->AddControl("title=WidthBox,type=VC_EDIT,text=30,x=107,y=32,w=40,h=25,numblurs=0,transparent=true,nointeract=true,tabname=HeightBox");
+    wind->AddControl("title=HeightBox,type=VC_EDIT,text=16,x=239,y=32,w=40,h=25,numblurs=0,transparent=true,nointeract=true,tabname=MinesBox");
+    wind->AddControl("title=MinesBox,type=VC_EDIT,text=99,x=355,y=32,w=40,h=25,numblurs=0,transparent=true,nointeract=true,tabname=SeedBox");
+    wind->AddControl("title=WidLabel,type=VC_LABEL,text=Width,x=59,y=34,w=51,h=22,numblurs=1,transparent=true");
+    wind->AddControl("title=HeightLabel,type=VC_LABEL,text=Height,x=187,y=34,w=51,h=22,numblurs=1,transparent=true");
+    wind->AddControl("title=MinesLabel,type=VC_LABEL,text=Mines,x=309,y=34,w=51,h=22,numblurs=1,transparent=true");
+    wind->AddControl("title=NewSeedBut,type=VC_BUTTON,text=Generate New Seed,x=54,y=130,w=340,h=26,dataname=RandSeedBut,needsparent=true");
+    wind->AddControl("type=VC_GLOBAL_STAT_INT,title=status,text=TIME(Ms):*I,x=10,y=-20,w=400,h=18,dataname=boardtimeint");
+
+    wind->calculate_edit_ctrl_tabs();
+
+
+}
+mouse_capture_struct MS_mousecap; 
+
+void MS_boardtimer_thread(void* a) {
+    string type;
+    ValStopwatch* boardtimer = (ValStopwatch*)WindowMan.find_registered_data("BoardTimer",type);
+    int* tt = (int*)WindowMan.find_registered_data("boardtimeint",type);
+    while (1) {
+        *tt = boardtimer->GetTime();
+        //cout << *tt << endl;
+        Sleep(7);
+    }
+}
+
+void MS_thread(void* a) {
+    short wid=30, hite=16, mines = 99;
+    MineMath_emulator mm_emu(30, 16, 99);
+    ValStopwatch BoardTimer(false);
+    
+    VWM_register_datan(&BoardTimer, "BoardTimer");
+    int board_time = 0;
+    VWM_register_datan(&board_time, "boardtimeint");
+
+    _beginthread(MS_boardtimer_thread, 0, NULL);
+
+
+    int clwid = wid * MS_G_cell_width + (MS_OFFSETx*2)+6;
+    int clhit = hite * MS_G_cell_width + (MS_OFFSETy +10)+6;
+    ValWindow* wind = WindowMan.create_new_windowts("minesweeper_test", 200, 200, clwid, clhit, 1);
+ //   wind->AddControl("type=VC_GLOBAL_STAT_INT,title=status,text=TIME:*I,x=10,y=20,w=200,h=18,transparent=false,dataname=boardtimeint");
+
+    ValWindow* controller = WindowMan.create_new_windowts("minesweeper_Controller", 200, 300+clhit, clwid, clhit, 1);
+    build_ms_controller(controller);
+    wind->is_master = true;
+    Sleep(1);
+    
+    int dd = 0;
+    cout << dd++<<"\n";
+    opus_vtc_runonce();
+    Opus_vtc.SetFont("System");
+    Opus_vtc.fontdat.lfQuality= CLEARTYPE_QUALITY;
+    ValGFX copy_board,underboard;
+    wind->capture_mouse(&MS_mousecap, MS_mousecapture_process);
+    cout << dd++ << "\n";
+    wind->associate_data((void*)&mm_emu, "MBoard_");
+    wind->associate_data((void*)&copy_board, "BBoard_gfx");
+    wind->associate_data((void*)&underboard, "BBoard_under");
+    controller->associate_data((void*)wind, "SweeperVW");
+    cout << dd++ << "\n";
+    MS_runonce(&wind->mygfx, &copy_board, 30, 16);
+    int width = wind->clientwidth;
+    wind->mygfx.draw_box3(((MS_OFFSETx + width) / 2) - 25, 5, ((MS_OFFSETx + width) / 2) + 25, 55, 5, 1, VRGB_GREEN);
+    Opus_vtc.content = "new";
+    Opus_vtc.x = ((MS_OFFSETx + width) / 2) - ( Opus_vtc.getrealtwidth() / 2);
+    Opus_vtc.y = 10;
+    Opus_vtc.DIBdraw(wind->myhdc, wind->mygfx.hbmp);
+    Opus_vtc.content = "game";
+    Opus_vtc.x = ((MS_OFFSETx + width) / 2) - (Opus_vtc.getrealtwidth() / 2);
+    Opus_vtc.y = 30;
+    Opus_vtc.DIBdraw(wind->myhdc, wind->mygfx.hbmp);
+    MS_reset(wind);
+    cout << dd++ << "\n";
+    __VWM_msgpump();
+
+}
+int MS_G_TimingInt = 0;
+
+#include"ValWindowEditor.h"
+void editor_thread(void* a) {
+    valeditor.start_window_editor_thread();
+}
+void do_valwindoweditor() {
+    //valeditor = new ValWindowEditor();
+
+    //_beginthread(open_VS_hypervisor_window_, 0, neo_loginfunc);
+    
+    _beginthread(editor_thread, 0, NULL);
+    WindowMan.wait_for_splash();
+    _beginthread(MS_thread, 0, NULL);
+    //WindowMan.wait_for_splash();
+    //__VWM_msgpump();
+}
+void ms_thread_two(void* a) {
+    do_valwindoweditor();
+}
+void vsrand() {
+
+}
+int mainhjgjg() {
+    foreach(ii, 5) {
+        srand(getticks() & 0x1111111111111111);
+        foreach(i, 10)cout << rand() % 100 << endl;
+        foreach(i, 10)cout << randstr(10) << endl;
+    }
+}
+
+int mainMSWIND() {  // windowed player
+    srand(getticks() & 0x1111111111111111);
+
+    VWM_register_datan(MS_generate_new_seedbut, "RandSeedBut");
+    VWM_register_datan(&MS_G_TimingInt, "MS_G_TimingInt");
+    VWM_register_datan(MSGUI_resetbut, "reset_but");
+
+    WindowMan.create_splash("MineSplash.jpg", 3000); 
+    
+    _beginthread(ms_thread_two, 0, NULL);
+  
+    Hook2 = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
+    KEYBOARD_PROCESSING = true;
+    
+    __VWM_msgpump();
+    MSG msg;
+    while (1) {
+        GetMessage(&msg, NULL, 0, 0);
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+}
+
+#include"mandelbrot.h"
+void mandelbrot_editor(void *a) {
+    
+    _beginthread(editor_thread, 0, NULL);
+    WindowMan.wait_for_splash();
+    _beginthread(do_mandelbrot_thread, 0, NULL);
+}
+
+
+
+
+
+void newton_derbail_itterate_numerator(double x, double y, int xf, int xe, double& rx, double& ry) {
+    VS_complex_exp_dumb(x, y, xe, rx, ry);
+    rx *= xf;
+    rx -= 1;
+}
+void newton_derbail_itterate_denominator(double x, double y, int xf, int xe, double& rx, double& ry) {
+    VS_complex_exp_dumb(x, y, xe - 1, rx, ry);
+    rx *= (xe - 1) * xf; // might need to change that.
+    ry *= (xe - 1) * xf;
+}
+
+
+void newton_derbail_itterate(double x, double y, int xf, int xe, double& rx, double& ry) {
+    double xx, yy, zxcopy, zycopy, zx = x, zy = y;
+    VS_complex_exp_dumb(zx, zy, xe, zxcopy, zycopy);
+    zxcopy *= xf;
+    zxcopy -= 1;
+    VS_complex_exp_dumb(zx, zy, xe - 1, xx, yy);
+    xx *= (xe - 1) * xf; // might need to change that.
+    yy *= (xe - 1) * xf;
+    VS_complex_div(zxcopy, zycopy, xx, yy, xx, yy);
+
+    rx = zx - xx;
+    ry = zy - yy;
+
+}
+
+int Arbit_newton_roots_addtoarray_d(double x, double y,double *arr, int &len) {
+    double* harr = arr;
+    if (len > 1000) {
+        cout << "len too long" << endl;
+        pause();
+    }
+    foreach(i, len) {
+        if (*harr == x && *(harr + 1) == y)return i;
+        harr += 2;
+    }
+    *harr = x;
+    harr++;
+    *harr = y;
+    len++;
+    return len;
+}
+
+int Arbit_newton_roots_addtoarray(double x, double y, double* arr, int& len) {
+
+
+    if (vabs(x) < .000000001)x = 0;
+    if (vabs(y) < .000000001)y = 0;
+    double* harr = arr;
+    if (len > 1000) {
+        cout << "len too long" << endl;
+        pause();
+    }
+    foreach(i, len) {
+        if (VS_complex_rangecomp(x, y, *harr, *(harr + 1), 0.00001))return i;
+        if (*harr == x && *(harr + 1) == y)return i;
+        harr += 2;
+    }
+    *harr = x;
+    harr++;
+    *harr = y;
+    len++;
+    return len;
+}
+newton_fractal arbitrary_newton_derbail_root_process(double x, double y, int xf, int xe, int maxits, double bail) {
+    newton_fractal ret;
+    int its = 1;
+    double xx, yy, zxcopy, zycopy,zx=x,zy=y;
+    double zxm1=0, zym1=0;
+    while (its < maxits) {
+        //VS_complex_exp_dumb(zx, zy, xe, zxcopy, zycopy); 
+        //zxcopy *= xf;
+        //zxcopy -= 1;
+        //VS_complex_exp_dumb(zx, zy, xe-1, xx, yy);
+        //xx *= (xe-1)*xf; // might need to change that.
+        //yy *= (xe-1)*xf;
+        //VS_complex_div(zxcopy, zycopy, xx, yy, xx, yy);
+        //zxcopy = zx - xx;
+        //zycopy = zy - yy;
+        newton_derbail_itterate(zx, zy, xf, xe, zxcopy, zycopy);
+
+        //if (zxcopy == zx && zycopy == zy) {
+        if(VS_complex_rangecomp(zxcopy, zycopy, zx, zy, 0.00000001)){
+            // report as definite root;
+            ret.its = its;
+            ret.x = zxcopy;
+            ret.y = zycopy;
+            ret.cat = 1;
+            if (zxcopy == zx && zycopy == zy) ret.cat = 1;
+            return ret;
+        }
+        zx = zxcopy;
+        zy = zycopy;
+        its++;
+    }
+    ret.its = its;
+    ret.x = zxcopy;
+    ret.y = zycopy;
+    ret.cat = 0;
+    return ret;
+}
+int arbitrary_newton_derbail_roots( int xf, int xe, int maxits,double bail, double* arr, int arrlen) {
+    newton_fractal val;
+    double* pla;
+    // process a sample of spaces to find roots.  
+    for (double n = -3.0; n < 3.0; n += .007) {
+        val=arbitrary_newton_derbail_root_process(n, n, xf, xe, maxits, bail);
+        if (val.cat == 1)Arbit_newton_roots_addtoarray(val.x, val.y, arr, arrlen);
+
+        val = arbitrary_newton_derbail_root_process(0, n, xf, xe, maxits, bail);
+        if (val.cat == 1)Arbit_newton_roots_addtoarray(val.x, val.y, arr, arrlen);
+
+        val = arbitrary_newton_derbail_root_process(n, 0, xf, xe, maxits, bail);
+        if (val.cat == 1)Arbit_newton_roots_addtoarray(val.x, val.y, arr, arrlen);
+
+        val = arbitrary_newton_derbail_root_process(n, -n, xf, xe, maxits, bail);
+        if (val.cat == 1)Arbit_newton_roots_addtoarray(val.x, val.y, arr, arrlen);
+
+        val = arbitrary_newton_derbail_root_process(n, sin(n), xf, xe, maxits, bail);
+        if (val.cat == 1)Arbit_newton_roots_addtoarray(val.x, val.y, arr, arrlen);
+
+    }
+    return arrlen;
+}
+
+string arbitrary_newton_derbail_roots_output(int xf, int xe, int maxits, double bail) {
+    double arr[2000];
+    foreach(i, 2000)arr[i] = 0.0;
+    int arrlen = 0;
+    arrlen=arbitrary_newton_derbail_roots(xf, xe, maxits, bail, (double*)arr, arrlen);
+    cout << arrlen << " roots detected\n";
+    int a, b;
+    foreach(i, arrlen) {
+        a = arr[i * 2];
+        b = arr[(i * 2) + 1];
+        if (vabs(a) < .000000001)a = 0;
+        if (vabs(b) < .000000001)b = 0;
+        cout << "if(VS_complex_rangecomp(zxcopy, zycopy," << a << ", " << b << ", 0.00001))return ((its*its) % (spaces*3))+(spaces*"<< ((i+1)%5) <<"); \n";
+    }
+
+    return "done";
+}
+
+
+
+void ANDRO_feed() {
+    /*int factors[300];
+    int factorslen = 0;
+    int i = 0;
+    ANDRO_factorlist_alter(1, 4, 0, factors, factorslen);*/
+
+    //ANDRO_factorlist_alter(1, 0, 1, factors, factorslen);
+    //factors[i++] = 11;
+    //factors[i++] = 13;
+    //factors[i++] = 0; // z^4
+    //factorslen++;
+
+    //factors[i++] = 7;
+    //factors[i++] = 11;
+    //factors[i++] = 1; // z^4
+    //factorslen++;
+
+    //factors[i++] = 5;
+    //factors[i++] = 7;
+    //factors[i++] = 0; // z^4
+    //factorslen++;
+    //
+    //factors[i++] = 3;
+    //factors[i++] = 5;
+    //factors[i++] = 1; // z^4
+    //factorslen++;
+
+    //factors[i++] = 1;
+    //factors[i++] = 3;
+    //factors[i++] = 0; // z^4
+    //factorslen++;
+
+    //factors[i++] = 1;
+    //factors[i++] = -1;// - xe to denote trig functions?  -- maybe not, derivatives.. switch hell.. 
+    //factors[i++] = 1; // instead, -xe to denote const i value
+    //factorslen++;
+
+    //factors[i++] = factorslen;
+    //factors[i++] = 0;
+    //factors[i++] = 1; // z^4
+    //factorslen++;
+
+
+   // cout << "calculating function roots for " << ANDRO_factors_str(factors, factorslen)<<"\n";
+   // arbitrary_newton_derbail_roots_outputmf(factors, factorslen, 512, 50);
+
+}
+/*
+
+3 roots detected z^3-1
+x: -0.5 y: -0.866025
+x: 1 y: 0
+x: -0.5 y: 0.866025
+
+5 roots detected
+x: -0.809017 y: -0.587785
+x: 0.309017 y: -0.951057
+x: 1 y: 0
+x: -0.809017 y: 0.587785
+x: 0.309017 y: 0.951057
+
+13 roots detected
+x: -0.748511 y: -0.66312
+x: 0.120537 y: -0.992709
+x: 1 y: 0
+x: -0.748511 y: 0.663123
+x: 0.120537 y: 0.992709
+x: -0.354605 y: -0.93501
+x: 0.885456 y: 0.464723
+x: 0.885456 y: -0.464723
+x: -0.970942 y: -0.23931
+x: 0.568065 y: -0.822984
+x: -0.354605 y: 0.935016
+x: -0.970942 y: 0.239316
+x: 0.568065 y: 0.822984
+*/
+
+
+int VS_COMPLEX_SqrtSafe(long double& xr, long double& ir) {
+    long double h = xr, hh = ir;
+    long double xrd, ird;
+    VS_COMPLEX_Sqrt(h, hh);
+    long double t = h, tt = hh;
+    xrd = h; ird = hh;
+    VS_complex_squareLD(t, tt);
+    int rt = false;
+    if (t != xr || tt != ir) {
+        t = h; tt = hh;
+        t += .00000000000000002;
+        tt -= .00000000000000002;
+        xrd = t;
+        ird = tt;
+        VS_complex_squareLD(t, tt);
+        if (t != xr || tt != ir) {
+            t = h; tt = hh;
+            t += .00000000000000003;
+            tt += .00000000000000003;
+            xrd = t;
+            VS_complex_squareLD(t, tt);
+            if (t != xr || tt != ir) {
+
+            }
+            else rt= 3;
+        }
+        else rt= 2;
+    }
+    else {
+        rt = 1;
+    }
+    if (rt) {
+        xr = xrd;
+        ir = ird;
+        return rt;
+    }
+    return 0;
+
+}
+int main() {
+    int faults = 0,faultsfixed=0;
+    int types[40];
+    foreach(i, 40)types[i] = 0;
+    foreach(xx, 1000) {
+        long double test1 = vs_rand_double(), test2 = vs_rand_double();
+        if(!(faultsfixed=VS_COMPLEX_SqrtSafe2(test1, test2))){        
+            cout << faultsfixed << "\n";
+            faults++;
+        }
+        types[faultsfixed]++;
+        cout << "checking x : " << xx << "      \rx";
+    }
+    cout << "\n\n";
+    cout << types[0] << ":" << types[1] << ":" << types[2] <<":"<<types[3]<< "\n";
+    cout << "total faults: " << faults << "....fixed: " << faultsfixed <<"\n";
+    pause();
+    _beginthread(calibrate_timer_thread, 0, NULL);
+   // Sleep(1000);
+    _beginthread(mandelbrot_editor, 0, NULL);
+    __VWM_msgpump();
+}
+
+int main_testtt() {
+    
+    //_Complex g =  
+    _Dcomplex c = _DCOMPLEX_(-0.298, 1.0);// _Complex_I;
+    cout << cabs(c) << endl;
+    
+
+    _Dcomplex* d = &c;
+    long double dd = *(long double*)((void*)d);
+    cout << dd << endl;
+    pause();
+
+}
+
+
+/*        long double test3 = test1, test4 = test2;
+        long double test5, test6;
+        //cout << test1 << " test " << test2 << "\n";
+        VS_COMPLEX_Sqrt(test1, test2);
+        test5 = test1;
+        test6 = test2;
+        //cout << test1 << " test " << test2 << "\n";
+        VS_complex_squareLD(test1, test2);
+        //cout << test1 << " test " << test2 << "\n";
+        if (test1 != test3 || test2 != test4) {
+            cout.precision(17);
+           // cout <<  "fault found\n";
+           // cout << test1 << " test " << test2 << "\n";
+           //cout << test3 << " test " << test4 << "\n";
+           //cout << test5 << " test " << test6 << "\n";
+           test3 = test5; test4 = test6;
+           test5 += .00000000000000002;
+           test6 -=  .00000000000000001;
+           VS_complex_squareLD(test5, test6);
+           //cout << test5 << " testalt " << test6 << "\n";
+           if (test5 == test1 && test2 == test6) {
+               cout << "slight nudge fixed it.....\n";
+               faultsfixed++;
+           }
+           else {
+               test3 -= .00000000000000002;
+               //test4 -= .00000000000000001;
+               VS_complex_squareLD(test3, test4);
+               //cout << test3 << " testalt " << test4 << "\n";
+               if (test3 == test1 && test2 == test4) {
+                   cout << "slight other nudge fixed it.....\n";
+                   //pause();
+                   faultsfixed++;
+               }
+           }*/

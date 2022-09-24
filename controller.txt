@@ -1,0 +1,49 @@
+type=WINDOW,title=mandelbrot controller,x=1914,y=178,w=800,h=800
+title=render_button,type=VC_BUTTON,text=Render,x=205,y=265,w=100,h=420,dataname=render_button,needsparent=true
+title=zoom_button,type=VC_BUTTON,text=+zoom,x=344,y=551,w=60,h=40,dataname=zoombutt,needsparent=true
+title=zoom_factor,type=VC_EDIT,text=.05,x=399,y=605,w=80,h=25,numblurs=0,transparent=true,nointeract=true
+title=zoom_label,type=VC_LABEL,text=zoom %: ,x=344,y=605,w=50,h=25,numblurs=1,transparent=true
+title=move_factor,type=VC_EDIT,text=.05,x=388,y=125,w=80,h=25,numblurs=0,transparent=true,nointeract=true
+title=move_label,type=VC_LABEL,text=move %: ,x=318,y=125,w=60,h=25,numblurs=1,transparent=true
+title=left_button,type=VC_BUTTON,text=left,x=338,y=60,w=35,h=25,dataname=leftbutt,needsparent=true
+title=right_button,type=VC_BUTTON,text=right,x=428,y=60,w=35,h=25,dataname=rightbutt,needsparent=true
+title=up_button,type=VC_BUTTON,text=up,x=383,y=35,w=35,h=25,dataname=upbutt,needsparent=true
+title=down_button,type=VC_BUTTON,text=down,x=383,y=85,w=35,h=25,dataname=downbutt,needsparent=true
+title=x_coord,type=VC_EDIT,text=-3,x=90,y=30,w=200,h=25,numblurs=0,transparent=true,nointeract=true
+title=xcordlabel,type=VC_LABEL,text=X: ,x=25,y=30,w=50,h=25,numblurs=1,transparent=true
+title=y_coord,type=VC_EDIT,text=-3,x=90,y=60,w=200,h=25,numblurs=0,transparent=true,nointeract=true
+title=ycordlabel,type=VC_LABEL,text=y: ,x=40,y=60,w=50,h=25,numblurs=1,transparent=true
+title=w_coord,type=VC_EDIT,text=6,x=90,y=90,w=200,h=25,numblurs=0,transparent=true,nointeract=true
+title=wcordlabel,type=VC_LABEL,text=Width: ,x=25,y=90,w=50,h=25,numblurs=1,transparent=true
+title=h_coord,type=VC_EDIT,text=6,x=90,y=120,w=200,h=25,numblurs=0,transparent=true,nointeract=true
+title=hcordlabel,type=VC_LABEL,text=Height: ,x=25,y=120,w=50,h=25,numblurs=1,transparent=true
+title=itterations,type=VC_EDIT,text=512,x=90,y=150,w=200,h=25,numblurs=0,transparent=true,nointeract=true
+title=itts_label,type=VC_LABEL,text=itterations: ,x=25,y=150,w=50,h=25,numblurs=1,transparent=true
+title=savefilename,type=VC_EDIT,text=Mandelbrot,x=430,y=720,w=300,h=25,numblurs=0,transparent=true,nointeract=true
+title=savelabel2,type=VC_LABEL,text=,x=740,y=705,w=50,h=25,numblurs=1,transparent=true
+title=savelabel,type=VC_LABEL,text=save file: ,x=340,y=720,w=80,h=25,numblurs=1,transparent=true
+title=save_button,type=VC_BUTTON,text=bmp save,x=336,y=750,w=125,h=25,dataname=savebutt,needsparent=true
+title=stopRenderLoopCHK,type=VC_CHECKBOX,text=Stop Render Loop,x=327,y=476,w=175,h=30
+title=RenderLoopbut,type=VC_BUTTON,text=testColorizer,x=676,y=754,w=107,h=32,dataname=colorstackbut
+title=RenderZoomLoopbut,type=VC_BUTTON,text=Render/Zoom Loop,x=327,y=513,w=175,h=31,dataname=RenderZoomLoopBut
+title=ColoringTypeBut,type=VC_BUTTON,text=switch to steep coloring,x=29,y=190,w=259,h=24,dataname=switchcolorsbut
+title=RenderTypeListbox,type=VC_LISTBOX,text=nt,x=25,y=250,w=171,h=450,listboxfunc=coutra,dataname=MandelRendersList,numblurs=0
+title=CXLabel,type=VC_LABEL,text=JSet Cx,x=509,y=30,w=60,h=22,numblurs=1,transparent=true
+title=CyLabel,type=VC_LABEL,text=JSet Cy,x=510,y=60,w=60,h=22,numblurs=1,transparent=true
+title=CxBox,type=VC_EDIT,text=.3,x=576,y=31,w=213,h=21,numblurs=0,transparent=true,nointeract=true
+title=CyBox,type=VC_EDIT,text=.37,x=576,y=61,w=213,h=21,numblurs=0,transparent=true,nointeract=true
+title=UnZoomBut,type=VC_BUTTON,text=-zoom,x=422,y=551,w=60,h=40,dataname=unzoombutt
+title=rendertypeslabel,type=VC_LABEL,text=Render Types:,x=24,y=219,w=168,h=22,numblurs=1,transparent=true
+title=JSet_zoombut,type=VC_BUTTON,text=JSet 'zoom',x=332,y=640,w=169,h=29,dataname=JSet_zoombut,textfont=CONSOLAS
+title=jset_zloopbut,type=VC_BUTTON,text=JSet 'zoomloop',x=333,y=672,w=169,h=29,dataname=JsetrenderZoomLoopBut
+title=JpgSaveBut,type=VC_BUTTON,text=Jpg Save,x=479,y=751,w=125,h=23,dataname=jpgsavebutt
+title=bailoutLabel,type=VC_LABEL,text=Bailout:,x=509,y=90,w=60,h=22,numblurs=1,transparent=true
+title=bailoutBox,type=VC_EDIT,text=4,x=576,y=91,w=213,h=21,numblurs=0,transparent=true,nointeract=true
+title=status_stat,type=VC_GLOBAL_STAT_STRING,text=status:*S,x=10,y=-20,w=400,h=18,dataname=G_Mandel_gstatus
+title=Loop_stat,type=VC_GLOBAL_STAT_STRING,text=Loop status:*S,x=10,y=-40,w=400,h=18,dataname=G_Mandel_loopstat
+title=do_wrong_mand,type=VC_CHECKBOX,text=over black only If Pos,x=25,y=710,w=250,h=25
+title=capx_coordbox,type=VC_EDIT,text=,x=328,y=170,w=240,h=22,numblurs=0,transparent=true,nointeract=true
+title=capy_coordbox,type=VC_EDIT,text=,x=328,y=190,w=240,h=22,numblurs=0,transparent=true,nointeract=true
+title=capw_coordbox,type=VC_EDIT,text=,x=328,y=210,w=240,h=22,numblurs=0,transparent=true,nointeract=true
+title=caph_coordbox,type=VC_EDIT,text=,x=328,y=230,w=240,h=22,numblurs=0,transparent=true,nointeract=true
+title=CopyDimsBut,type=VC_BUTTON,text=Copy Dims ,x=322,y=261,w=245,h=28,dataname=Mandel_copydims_but

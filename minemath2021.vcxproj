@@ -159,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\val_includes\2020\valtimer.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValWindow.h" />
     <ClInclude Include="includes2020\valtextcontrol.h" />
     <ClInclude Include="minemath2021.h" />
     <ClInclude Include="minemath_emu.h" />
