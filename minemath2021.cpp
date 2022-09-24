@@ -152,7 +152,7 @@ void gdiSaveHbitmapjpg(HBITMAP& membit, string fname)
         CLSID clsid;
         GetEncoderClsid(L"image/jpeg", &clsid);
 
-        bitmap.Save(ctolpwstr(fname), &clsid);
+        bitmap.Save(ctolpwstr(fname), &clsid); 
 
     }
 
