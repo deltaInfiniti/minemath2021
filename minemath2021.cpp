@@ -139,7 +139,7 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 	return 0;
 }*/
 WCHAR* ctolpwstr(string& s);
-void gdiSaveHbitmap(HBITMAP &membit, string fname)
+void gdiSaveHbitmapjpg(HBITMAP& membit, string fname)
 {
     using namespace Gdiplus;
     GdiplusStartupInput gdiplusStartupInput;
@@ -158,6 +158,34 @@ void gdiSaveHbitmap(HBITMAP &membit, string fname)
 
     GdiplusShutdown(gdiplusToken);
 }
+void gdiSaveHbitmappng(HBITMAP& membit, string fname)
+{
+    using namespace Gdiplus;
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    {
+
+        Gdiplus::Bitmap bitmap(membit, NULL);
+        CLSID clsid;
+        GetEncoderClsid(L"image/png", &clsid);
+
+        bitmap.Save(ctolpwstr(fname), &clsid);
+
+    }
+
+    GdiplusShutdown(gdiplusToken);
+}
+
+void gdiSaveHbitmap(HBITMAP &membit, string fname, string type="jpg")
+{
+
+        if(type=="jpg")gdiSaveHbitmapjpg(membit, fname);
+        else if(type=="png")gdiSaveHbitmappng(membit, fname);
+
+}
+
 //void GDIPtext(HBITMAP& bitm, string text) {
 //    using namespace Gdiplus;
 //    GdiplusStartupInput gdiplusStartupInput;
@@ -2394,7 +2422,7 @@ int VS_COMPLEX_SqrtSafe(long double& xr, long double& ir) {
         rt = 1;
     }
     if (rt) {
-        xr = xrd;
+        xr = xrd; 
         ir = ird;
         return rt;
     }

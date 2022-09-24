@@ -15,7 +15,7 @@
 // new max is 99x99
 #define GAME_TYPE 0
 #define OUTPUT_SEEDS 0
-
+#include"ValScreenwrapper.h"
 
 //quick-click globals
 static bool CORNER_CLICK = 1;//  clicks only corners
@@ -2721,6 +2721,33 @@ void opus_trainer_drawtext(string str, int x, int y) {
 	Opus_vtc.y = (BIG_y * y)+2;
 	Opus_vtc.DIBdraw(trainer.condc, trainer.newbitmap);
 }
+#ifndef VRGB 
+#define VRGB COLORREF
+#define VRGB_BLUE 16711680
+#define VRGB_RED  255
+#define VRGB_GREEN 64000
+#define VRGB_WHITE 16777215
+#define VRGB_BLACK 0
+
+#define VRGB_PINK 13120200 //200,50,200
+#define VRGB_PURPLE 16728192//128, 64, 255
+#define VRGB_CYAN 16776960  //0,255,255
+#define VRGB_YELLOW 65535  //255,255,0
+#define VRGB_BROWN 15440  //80,60,0
+#define VRGB_ORANGE 348341  //181,80,5
+#define VRGB_GREEN_DARK 146456  //24,60,2
+#define VRGB_GREEN_LIGHT 7405454  //142,255,112
+#define VRGB_RED_DARK 2626  //66,10,0
+#define VRGB_RED_LIGHT 1447616  //192,22,22
+#define VRGB_BLUE_DARK 4259840  //0,0,65
+#define VRGB_BLUE_LIGHT 11555116  //44,81,176
+#define VRGB_GREY_DARK 2105376  //32,32,32
+#define VRGB_GREY_LIGHT 6316128  //96,96,96
+#define VRGB_GREY_VLIGHT 8421504 // 128,128,128
+#define VRGB_GREY_VVLIGHT 12632256 //192...
+#define VRGB_GREY 4210752  //64,64,64
+#define RECT val_rect
+#endif 
 void opus_trainer_drawnum(int n, int x, int y) {
 	switch (n) {
 	case 0: Opus_vtc.SetColor(VRGB_ORANGE); break;
