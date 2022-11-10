@@ -39,6 +39,48 @@ string ctostr(int i);
 string creftostr(COLORREF a);
 #include"valtimer.h"
 #include <GdiPlus.h>
+#include"Magick++.h"
+#pragma comment( lib, "CORE_RL_Magick++_" )
+#pragma comment( lib, "CORE_RL_MagickCore_" )
+bool file_exists(string);
+void MagickTest() {
+    cout << "starting magictest\n";
+    vector<Magick::Image> frames;
+    vector<Magick::Image> frames2;
+    using namespace Magick;
+    cout << "starting magictest2\n";
+    try {
+    Image image(Geometry(2000,2000,0,0),Color(0,0,0,0));
+    string name = "frame";
+    string app = "1";
+    int plc = 1;
+    cout << "starting magictest3\n";
+    
+        // Read a file into image object
+        while (file_exists(name + app + ".png")) {
+            cout << "found frame: " << name + app + ".png" << "\n";
+            image.read(name + app + ".png");
+            frames.push_back(image);
+//            readImages(&frames,name + app + ".png");
+            app = ctostr(++plc);
+        }
+        if (plc > 1) {
+            coalesceImages(&frames2, frames.begin(), frames.end());
+            cout << "file writing\n";
+            writeImages(frames2.begin(), frames2.end(), "out.gif");
+            cout << "file written\n";
+        }
+    }
+    catch (Exception& error_)
+    {
+        cout << "Caught exception: " << error_.what() << endl;
+        return ;
+    }
+
+    //image.write("out.gif");
+
+}
+
 #pragma comment( lib, "gdiplus" )
 int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 {
@@ -172,11 +214,29 @@ void gdiSaveHbitmappng(HBITMAP& membit, string fname)
         GetEncoderClsid(L"image/png", &clsid);
 
         bitmap.Save(ctolpwstr(fname), &clsid);
-         
+        
     }
 
     GdiplusShutdown(gdiplusToken);
 }
+void gdiLoadHbitmappng(HBITMAP& membit, string fname)
+{
+    using namespace Gdiplus;
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    {
+        Gdiplus::Bitmap bitmap(membit, NULL);
+        bitmap.FromFile(ctolpwstr(fname), true);
+        const Color c = Color(0, 0, 0);
+        bitmap.GetHBITMAP(c, &membit);
+
+    }
+
+    GdiplusShutdown(gdiplusToken);
+}
+
 
 void gdiSaveHbitmap(HBITMAP &membit, string fname, string type="jpg")
 {
@@ -2103,7 +2163,14 @@ void MS_thread(void* a) {
 int MS_G_TimingInt = 0;
 
 #include"ValWindowEditor.h"
+void do_dah_splashing(void* a) {
+    cout << "started splash thread\n";
+    WindowMan.create_splash("MineSplash.jpg", 3000);
+    __VWM_msgpump();
+}
+
 void editor_thread(void* a) {
+    //_beginthread(do_dah_splashing, 0, NULL);
     valeditor.start_window_editor_thread();
 }
 void do_valwindoweditor() {
@@ -2158,8 +2225,8 @@ int mainMSWIND() {  // windowed player
 void mandelbrot_editor(void *a) {
     
     _beginthread(editor_thread, 0, NULL);
-    WindowMan.wait_for_splash();
     _beginthread(do_mandelbrot_thread, 0, NULL);
+    WindowMan.wait_for_splash();
 }
 
 
@@ -2429,26 +2496,88 @@ int VS_COMPLEX_SqrtSafe(long double& xr, long double& ir) {
     return 0;
 
 }
-int main() {
-    int faults = 0,faultsfixed=0;
-    int types[40];
-    foreach(i, 40)types[i] = 0;
-    foreach(xx, 1000) {
-        long double test1 = vs_rand_double(), test2 = vs_rand_double();
-        if(!(faultsfixed=VS_COMPLEX_SqrtSafe2(test1, test2))){        
-            cout << faultsfixed << "\n";
-            faults++;
-        }
-        types[faultsfixed]++;
-        cout << "checking x : " << xx << "      \rx";
+
+bool test_mul_vs_sqr(long double a,long  double b) {
+    long double cc, ccc, dd=a, ddd=b;
+    VS_complex_mulLD(a, b, a, b, cc, ccc);
+    VS_complex_mulLD(cc, ccc, a, b, cc, ccc);
+    VS_complex_mulLD(cc, ccc, a, b, cc, ccc);
+    //VS_complex_mul( cc, ccc, cc, ccc, cc, ccc);
+    //VS_complex_exp(a, b,3, cc, ccc);
+    VS_complex_squareLD(dd, ddd);
+    VS_complex_squareLD(dd, ddd);
+    if (dd != cc || ddd != ccc) {
+        cout << "fault found \n";
+        cout << cc << "  " << ccc << "\n";
+        cout << dd << "  " << ddd << "\n";
+        return false;
     }
-    cout << "\n\n";
-    cout << types[0] << ":" << types[1] << ":" << types[2] <<":"<<types[3]<< "\n";
-    cout << "total faults: " << faults << "....fixed: " << faultsfixed <<"\n";
-    pause();
+}
+
+
+
+int main(int /*argc*/, char** argv)
+{
+
+    //system("ffmpeg -r 30 -f image2 -s 1920x1080 -i frame%d.png -vcodec libx264 -crf 18 -pix_fmt rgb24 test.mp4");
+    //pause();
+    //return 0;
+    //long double plc = 0.7;
+    //long double space = 0.0;
+    //int its = 0;
+    //while (plc > .05) {
+    //    space = plc * .001;
+    //    plc -= space;
+    //    its++;
+    //}
+    //cout << "iterations to .001  " << its << "last space is " << space << "\n";
+    //plc = 0.05;
+    // space = 0.0;
+    // its = 0;
+    //while (plc < .7) {
+    //    space = plc * .001;
+    //    plc += space;
+    //    its++;
+    //}
+    //cout << "iterations to .001  " << its << "last space is " << space << "\n";
+    //pause();
+    using namespace Magick;
+    InitializeMagick(*argv);
+    VS_AUTOSHOW_NEWWINDOW = false;
+    Sleep(13);
+    G_VS_RANDSEED(getticks());
+    //MagickTest();
+
+
+    //int fault = 0;
+    //cout << setprecision(17);
+    //foreach(n, 100) {
+    //    long double test1 = vs_rand_double(), test2 = vs_rand_double();
+    //   if(!test_mul_vs_sqr(test1, test2))fault++;
+
+    //}
+    //cout << fault << ":faults\n";
+    //pause();
+    //int faults = 0,faultsfixed=0;
+    //int types[40];
+    //foreach(i, 40)types[i] = 0;
+    //foreach(xx, 1000) {
+    //    long double test1 = vs_rand_double(), test2 = vs_rand_double();
+    //    if(!(faultsfixed=VS_COMPLEX_SqrtSafe2(test1, test2))){        
+    //        cout << faultsfixed << "\n";
+    //        faults++;
+    //    }
+    //    types[faultsfixed]++;
+    //    cout << "checking x : " << xx << "      \rx";
+    //}
+    //cout << "\n\n";
+    //cout << types[0] << ":" << types[1] << ":" << types[2] <<":"<<types[3]<< "\n";
+    //cout << "total faults: " << faults << "....fixed: " << faultsfixed <<"\n";
+    //pause();
     _beginthread(calibrate_timer_thread, 0, NULL);
    // Sleep(1000);
     _beginthread(mandelbrot_editor, 0, NULL);
+    WindowMan.create_splash("MineSplash.jpg", 3000);
     __VWM_msgpump();
 }
 
@@ -2502,3 +2631,4 @@ int main_testtt() {
                    faultsfixed++;
                }
            }*/
+

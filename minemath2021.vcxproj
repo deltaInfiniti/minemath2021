@@ -72,15 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\vc_projects\val_includes\2020\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\vc_projects\val_includes\2020\include\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\vc_projects\val_includes\2020\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\vc_projects\val_includes\2020\include\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\vc_projects\val_includes\2020\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\vc_projects\val_includes\2020\include\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\vc_projects\val_includes\2020\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\vc_projects\val_includes\2020\include\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -158,13 +166,34 @@
     <ClCompile Include="minemath2021.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\val_includes\2020\mandelbrot.h" />
+    <ClInclude Include="..\..\val_includes\2020\strlist.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValControl.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValCrypt.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValDataRegister.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValEventHandler.h" />
+    <ClInclude Include="..\..\val_includes\2020\valgfx.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValMemory.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValScreenwrapper.h" />
+    <ClInclude Include="..\..\val_includes\2020\valsprite.h" />
+    <ClInclude Include="..\..\val_includes\2020\valtextcontrol.h" />
     <ClInclude Include="..\..\val_includes\2020\valtimer.h" />
+    <ClInclude Include="..\..\val_includes\2020\valutils.h" />
     <ClInclude Include="..\..\val_includes\2020\ValWindow.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValWindowEditor.h" />
+    <ClInclude Include="..\..\val_includes\2020\ValWindowManager.h" />
+    <ClInclude Include="..\..\val_includes\2020\valwrapper.h" />
+    <ClInclude Include="..\..\val_includes\2020\varlist.h" />
+    <ClInclude Include="..\..\val_includes\2020\varlist2020.h" />
     <ClInclude Include="includes2020\valtextcontrol.h" />
     <ClInclude Include="minemath2021.h" />
     <ClInclude Include="minemath_emu.h" />
     <ClInclude Include="opus.h" />
     <ClInclude Include="Suplimental_Headers\MagnumbFrontier.h" />
+    <ClInclude Include="valComplexMath.h" />
+    <ClInclude Include="valFractal.h" />
+    <ClInclude Include="valFractalIterators.h" />
+    <ClInclude Include="valFractal_ANDRO.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

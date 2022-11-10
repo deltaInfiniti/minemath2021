@@ -1,120 +1,5 @@
 #pragma once
 
-class valfractal_orbit {
-public:
-    double* bufferdata=NULL;
-    bool hasbuffer = false;
-    int  bufferlength=0;
-    int indexes_per_landing = 0;
-    int iterations = 0; // should be bufferlength/indexex_per_landing
-    double x = 0, y = 0;
-    void build(double* buf, int len, int indexes, int iter, double xx, double yy) {
-        bufferdata = buf;
-        bufferlength = len;
-        indexes_per_landing = indexes;
-        iterations = iter;
-        x = xx;
-        y = yy;
-    }
-    void build_copy(double* buf, int iter, double xx, double yy, int indexes=2) {
-        if (hasbuffer)deletebuffer();
-        bufferdata = new double[ (iter * indexes)+1];
-        hasbuffer = true;
-        double* plc = bufferdata, * buff = buf;
-        foreach(n, iter) { // assume 2 indexes since that's all I use currently
-            *plc = *buff; plc++; buff++;
-            *plc = *buff; plc++; buff++;
-        }
-
-        bufferlength = iter * indexes;
-        indexes_per_landing = indexes;
-        iterations = iter;
-        x = xx;
-        y = yy;
-    }
-    double* walkpoint = NULL;
-    int walkind = -1;
-    void begin_walk() {
-        walkpoint = bufferdata;
-        walkind = 0;
-    }
-    bool walk(double& zx, double& zy) {
-        if (walkind >= iterations || walkind==-1) { walkind = -1; return false; }
-        zx = *walkpoint; walkpoint++;
-        zy = *walkpoint; walkpoint++;
-        walkind++;
-        return true;
-    }
-
-    void deletebuffer() {
-        if(hasbuffer)delete[] bufferdata;
-        hasbuffer = false;
-    }
-    ~valfractal_orbit() {
-        deletebuffer();
-    }
-};
-
-class valfractal {
-public:
-    valfractal_orbit* orbits;
-    int rwidth = 0, rheight = 0;
-    int totalorbits = 0;
-    bool hasbuffer = false;
-    double dimx = 0, dimy = 0;
-    double dimw = 0, dimh = 0;
-
-    valfractal(int w, int h) {
-        
-        rwidth = w; rheight = h;
-        totalorbits = w * h;
-        orbits = new valfractal_orbit[totalorbits];
-        hasbuffer = true;
-    }
-    void resize(int w, int h) {
-        rwidth = w; rheight = h;
-        delete_buffers();
-        totalorbits = w * h;
-        orbits = new valfractal_orbit[totalorbits];
-        hasbuffer = true;
-    }
-
-    valfractal_orbit& getorbit(int xx, int yy) {
-        if (hasbuffer && xx<rheight && yy < rwidth && xx>0 && yy>0) return *(orbits + ((yy * rwidth) + xx));
-    }
-
-    valfractal_orbit* walkpoint = NULL;
-    int walkind = -1;
-    int walkx=0, walky = 0;
-    void begin_walk( ) {
-        walkpoint = orbits;
-        walkind = 0;
-        walkx = 0; walky = 0;
-    }
-
-    bool walk(valfractal_orbit*& orbit, int& x, int& y) {
-        if (walkind >= totalorbits || walkind == -1) { walkind = -1; return false; }
-        orbit = walkpoint; walkpoint++;
-        walkind++; 
-        walkx++;
-        if (walkx >= rwidth) {
-            walky++; walkx = 0;
-        }
-        x = walkx;
-        y = walky;
-        return true;
-    }
-
-    void delete_buffers() {
-        if (hasbuffer)delete[] orbits;
-        hasbuffer = false;
-    }
-
-    ~valfractal() {
-        delete_buffers();
-    }
-
-};
 
 
 int calc_mandle_buddah(double x, double y, int maxits, double bail, double* trackbuff) {
@@ -883,6 +768,89 @@ int calc_mandle_weirdMag_buddahG(double x, double y, int maxits, double bail, do
     return its;
 }
 
+
+int calc_mandle_weirdMag_buddahI(double x, double y, int maxits, double bail, double* trackbuff) {
+    int its = 1;
+    double zx = 2, zy = y;
+    long double zhx = 0, zhy = 0;
+    long double numerx, numery;
+    long double denomx, denomy;
+
+    long double consdenomx = x, consdenomy = y; // c-2 divisor
+    consdenomx -= 2;
+
+    long double zxcopyb = 100, zycopyb = 100;
+    double* trackbufff = trackbuff;
+    while (its < maxits) {
+        denomx = zx; denomy = zy;
+        VS_complex_squareLD(denomx, denomy);
+        // denom is now z^2
+        //(-c + 2 z - c z + c z ^ 2 - 2 z ^ 3 + c z ^ 3)
+        numerx = ((-x) + zx + zx);
+        numery = ((-y) + zy + zy);
+        VS_complex_mulLD(zx, zy, x, y, zhx, zhy);
+        numerx -= zhx;
+        numery -= zhy;
+        // here -c + 2 z - c z
+        VS_complex_mulLD(denomx, denomy, x, y, zhx, zhy); //zh= cz^2
+        numerx += zhx;
+        numery += zhy;
+        VS_complex_mulLD(denomx, denomy, zx, zy, zhx, zhy); //zh =z^3, need 2
+        numerx -= (zhx + zhx);
+        numery -= (zhy + zhy);
+        VS_complex_mulLD(zhx, zhy, x, y, zhx, zhy); //zh= cz^3
+        numerx += zhx;
+        numery += zhy;
+
+
+
+        VS_complex_div(numerx, numery, consdenomx, consdenomy, zx, zy);
+        VS_complex_div(zx, zy, denomx, denomy, zx, zy);
+
+        if (vabs(zx) + vabs(zy) > bail)return its;
+//        if (VS_complex_rangecomp(zx, zy, 0, 0, .0000001))return maxits;// -(its % (maxits / 100));
+        if (VS_complex_rangecomp(zx, zy, zxcopyb, zycopyb, .0000000001))return its;
+        *trackbufff = zx; trackbufff++;
+        *trackbufff = zy; trackbufff++;
+        zxcopyb = zx; zycopyb = zy;
+        its++;
+    }
+    return its;
+}
+int calc_mandle_weirdMag_buddahJ(double x, double y, int maxits, double bail, double* trackbuff) {
+    //this is the correct rendition of weirdMag1
+    int its = 1;
+    double zx = 2, zy = y;
+    long double zhx = 0, zhy = 0;
+    long double numerx, numery;
+    long double denomx, denomy;
+
+    long double consdenomx = 2-x, consdenomy = -y; // -c/ (2-c)
+    VS_complex_divLD(-x, -y, consdenomx, consdenomy, consdenomx, consdenomy);
+
+    long double zxcopyb = 100, zycopyb = 100;
+    double* trackbufff = trackbuff;
+    while (its < maxits) {
+        zhx = zx - 1;
+        zhy = zy;
+        numerx = zx + consdenomx;
+        numery = zy + consdenomy;
+        VS_complex_mulLD(numerx, numery, zhx, zhy, numerx, numery); //(z-1)*(z-(c/2-c))
+        denomx = zx; denomy = zy;
+        VS_complex_squareLD(denomx, denomy); // z^2
+
+        VS_complex_div(numerx, numery, denomx, denomy, zx, zy);
+
+        if (vabs(zx) + vabs(zy) > bail)return its;
+        //        if (VS_complex_rangecomp(zx, zy, 0, 0, .0000001))return maxits;// -(its % (maxits / 100));
+        if (VS_complex_rangecomp(zx, zy, zxcopyb, zycopyb, .0000000001))return its;
+        *trackbufff = zx; trackbufff++;
+        *trackbufff = zy; trackbufff++;
+        zxcopyb = zx; zycopyb = zy;
+        its++;
+    }
+    return its;
+}
 //c/(2 - c) - z - (c z^2)/(2 - c) + z^3
 int calc_mandle_weirdMag2_buddah(double x, double y, int maxits, double bail, double* trackbuff) {
     int its = 1;
@@ -891,8 +859,8 @@ int calc_mandle_weirdMag2_buddah(double x, double y, int maxits, double bail, do
     long double numerx, numery;
     long double denomx, denomy;
 
-    long double consdenomx = x, consdenomy = y*-1; // 2-c divisor
-    consdenomx = 2-consdenomx;
+    long double consdenomx = x, consdenomy = y * -1; // 2-c divisor
+    consdenomx = 2 - consdenomx;
 
     long double consfactx = x, consfacty = y; // (c/(2-c)) factor
     VS_complex_divLD(consfactx, consfacty, consdenomx, consdenomy, consfactx, consfacty);
@@ -2270,6 +2238,77 @@ int calc_mandle_Valsfunc_buddahN(double x, double y, double cx, double cy, int m
     }
     return its;
 }
+int calc_mandle_weirdMagJ_jset_buddah(double x, double y, double cx, double cy, int maxits, double bail, double* trackbuff) {
+    //this is the correct rendition of weirdMag1
+    int its = 1;
+    double zx = 2, zy = y;
+    long double zhx = 0, zhy = 0;
+    long double numerx, numery;
+    long double denomx, denomy;
+
+    long double consdenomx = 2 - x, consdenomy = -y; // -c/ (2-c)
+    VS_complex_divLD(-x, -y, consdenomx, consdenomy, consdenomx, consdenomy);
+
+    long double zxcopyb = 100, zycopyb = 100;
+    double* trackbufff = trackbuff;
+    while (its < maxits) {
+        zhx = zx - 1;
+        zhy = zy;
+        numerx = zx + consdenomx;
+        numery = zy + consdenomy;
+        VS_complex_mulLD(numerx, numery, zhx, zhy, numerx, numery); //(z-1)*(z-(c/2-c))
+        denomx = zx; denomy = zy;
+        VS_complex_squareLD(denomx, denomy); // z^2
+
+        VS_complex_div(numerx, numery, denomx, denomy, zx, zy);
+        zx += cx;
+        zy += cy;
+        if (vabs(zx) + vabs(zy) > bail)return its;
+        //        if (VS_complex_rangecomp(zx, zy, 0, 0, .0000001))return maxits;// -(its % (maxits / 100));
+        if (VS_complex_rangecomp(zx, zy, zxcopyb, zycopyb, .0000000001))return its;
+        *trackbufff = zx; trackbufff++;
+        *trackbufff = zy; trackbufff++;
+        zxcopyb = zx; zycopyb = zy;
+        its++;
+    }
+    return its;
+}
+#define ValFractal_iterator(fnname) int fnname (double x, double y, double cx, double cy, int maxits, double bail, double* trackbuff)
+#define ValFractal_iterator_preamble(x,y) int its = 1; double zx = x, zy = y; long double zhx = 0, zhy = 0, numerx, numery, denomx, denomy,zxcopyb = 100, zycopyb = 100; double* trackbufff = trackbuff;
+#define ValFractal_iterator_loopend()if (vabs(zx) + vabs(zy) > bail)return its; \
+if (VS_complex_rangecomp(zx, zy, zxcopyb, zycopyb, .0000000001))return its; \
+*trackbufff = zx; trackbufff++; *trackbufff = zy; trackbufff++; zxcopyb = zx; zycopyb = zy; its++; 
+
+#define ValFractal_iterator_loopendINFT()if (vabs(zx) + vabs(zy) > bail)return its; \
+*trackbufff = zx; trackbufff++; *trackbufff = zy; trackbufff++; zxcopyb = zx; zycopyb = zy; its++; 
+
+#define ValFractal_iterator_loopendROOT()if (VS_complex_rangecomp(zx, zy, zxcopyb, zycopyb, .0000000001))return its; \
+*trackbufff = zx; trackbufff++; *trackbufff = zy; trackbufff++; zxcopyb = zx; zycopyb = zy; its++; 
+
+ValFractal_iterator(VF_test_iterator) {//(double x, double y, double cx, double cy, int maxits, double bail, double* trackbuff)
+        //this is the correct rendition of weirdMag1
+    ValFractal_iterator_preamble(2, y);
+    long double consdenomx = 2 - x, consdenomy = -y; // -c/ (2-c)
+    VS_complex_divLD(-x, -y, consdenomx, consdenomy, consdenomx, consdenomy);
+
+    while (its < maxits) {
+        zhx = zx - 1;
+        zhy = zy;
+        numerx = zx + consdenomx;
+        numery = zy + consdenomy;
+        VS_complex_mulLD(numerx, numery, zhx, zhy, numerx, numery); //(z-1)*(z-(c/2-c))
+        denomx = zx; denomy = zy;
+        VS_complex_squareLD(denomx, denomy); // z^2
+
+        VS_complex_div(numerx, numery, denomx, denomy, zx, zy);
+        zx += cx;
+        zy += cy;
+        ValFractal_iterator_loopendROOT();
+    }
+    return its;
+}
+
+
 /******************************************start arbitrary fractal threading system***********************************/
 
 struct Mandel_workerthread_info {

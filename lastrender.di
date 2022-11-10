@@ -1,0 +1,1 @@
+bbbrot3=renderer$TestCrCi rand jset J!x_coord$8.92624050000001!y_coord$-0.33030534375!w_coord$62.9646868125!h_coord$0.648616359375!CxBox$0!CyBox$0!itterations$1512!bailoutBox$128!bbrot_samplesEdit$5000!x_coordboodah$-1.149!y_coordboodah$-1.587!w_coordboodah$2.28!h_coordboodah$3.144!RandSeedBox$RandomSeed!RelaxBox$1!ANDRO$1|3|0|1|64|0!

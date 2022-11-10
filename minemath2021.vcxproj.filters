@@ -41,5 +41,68 @@
     <ClInclude Include="..\..\val_includes\2020\ValWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\mandelbrot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\strlist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValCrypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValDataRegister.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValEventHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\valgfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValMemory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValScreenwrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\valsprite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\valtextcontrol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\valutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValWindowEditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\ValWindowManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\valwrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\varlist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\val_includes\2020\varlist2020.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="valFractal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="valFractalIterators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="valComplexMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="valFractal_ANDRO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
